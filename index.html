@@ -1,0 +1,606 @@
+<title>Split Second</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Barlow+Condensed:wght@500;600;700&display=swap');
+
+  :root {
+    --bg: #e7e4dc;
+    --card: #ffffff;
+    --card-line: rgba(27, 30, 34, 0.1);
+    --ink: #1b1e22;
+    --ink-dim: #6b6f74;
+    --ink-faint: #9a9d9f;
+    --accent: #b5321a;
+    --accent-2: #2f6e5c;
+
+    --dial: #f4efe2;
+    --dial-edge: rgba(27, 30, 34, 0.16);
+    --dial-tick: #2a2d2f;
+    --dial-tick-minor: rgba(42, 45, 47, 0.45);
+    --hand-main: #1b1e22;
+    --hand-sub: #6b6f74;
+
+    --bezel-a: #f3f3f0;
+    --bezel-b: #b9bcc0;
+    --bezel-c: #86898d;
+    --bezel-d: #dcdedf;
+    --metal-a: #eceeee;
+    --metal-b: #9a9d9f;
+
+    --strap: #23262a;
+    --strap-weave: rgba(255, 255, 255, 0.05);
+
+    --shadow: 0 1px 2px rgba(27, 30, 34, 0.06), 0 18px 40px -18px rgba(27, 30, 34, 0.35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171a;
+      --card: #1c2024;
+      --card-line: rgba(237, 238, 236, 0.08);
+      --ink: #edeeec;
+      --ink-dim: #9aa0a6;
+      --ink-faint: #6d7278;
+      --accent: #ff6a45;
+      --accent-2: #57b79a;
+
+      --dial: #17191c;
+      --dial-edge: rgba(237, 238, 236, 0.14);
+      --dial-tick: #e7e5dd;
+      --dial-tick-minor: rgba(231, 229, 221, 0.4);
+      --hand-main: #f2efe6;
+      --hand-sub: #9aa0a6;
+
+      --bezel-a: #3a3d40;
+      --bezel-b: #1c1e20;
+      --bezel-c: #050506;
+      --bezel-d: #26282a;
+      --metal-a: #34373a;
+      --metal-b: #131415;
+
+      --strap: #0e1012;
+      --strap-weave: rgba(255, 255, 255, 0.04);
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 22px 48px -20px rgba(0, 0, 0, 0.7);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #14171a;
+    --card: #1c2024;
+    --card-line: rgba(237, 238, 236, 0.08);
+    --ink: #edeeec;
+    --ink-dim: #9aa0a6;
+    --ink-faint: #6d7278;
+    --accent: #ff6a45;
+    --accent-2: #57b79a;
+
+    --dial: #17191c;
+    --dial-edge: rgba(237, 238, 236, 0.14);
+    --dial-tick: #e7e5dd;
+    --dial-tick-minor: rgba(231, 229, 221, 0.4);
+    --hand-main: #f2efe6;
+    --hand-sub: #9aa0a6;
+
+    --bezel-a: #3a3d40;
+    --bezel-b: #1c1e20;
+    --bezel-c: #050506;
+    --bezel-d: #26282a;
+    --metal-a: #34373a;
+    --metal-b: #131415;
+
+    --strap: #0e1012;
+    --strap-weave: rgba(255, 255, 255, 0.04);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 22px 48px -20px rgba(0, 0, 0, 0.7);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Barlow Condensed', ui-sans-serif, system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+  }
+
+  .rig {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0 4px;
+  }
+
+  .brand-name {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .brand-unit {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.03em;
+    color: var(--ink-faint);
+  }
+
+  /* ---- watch assembly ---- */
+  .watch {
+    position: relative;
+    width: 100%;
+    max-width: 340px;
+    margin: 26px auto 10px;
+  }
+
+  .strap {
+    position: absolute;
+    left: 50%;
+    width: 46%;
+    height: 86px;
+    background: repeating-linear-gradient(
+      90deg,
+      var(--strap) 0px, var(--strap) 5px,
+      var(--strap-weave) 5px, var(--strap-weave) 6px
+    );
+    border: 1px solid rgba(0, 0, 0, 0.35);
+    transform: translateX(-50%);
+    z-index: 1;
+  }
+
+  .strap.top { top: -58px; border-radius: 4px 4px 0 0; }
+  .strap.bottom { bottom: -58px; border-radius: 0 0 4px 4px; }
+
+  .keeper {
+    position: absolute;
+    left: 50%;
+    width: 56%;
+    height: 14px;
+    transform: translateX(-50%);
+    background: var(--metal-b);
+    border-radius: 2px;
+    z-index: 2;
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+  }
+
+  .keeper.top { top: -6px; }
+  .keeper.bottom { bottom: -6px; }
+
+  .case-wrap {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 32% 26%, var(--bezel-a), var(--bezel-b) 55%, var(--bezel-c) 100%);
+    box-shadow: var(--shadow), inset 0 0 0 2px var(--bezel-d);
+    z-index: 3;
+    padding: 11px;
+  }
+
+  .case-wrap svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    overflow: visible;
+  }
+
+  .lug {
+    position: absolute;
+    left: 50%;
+    width: 30%;
+    height: 20px;
+    background: linear-gradient(180deg, var(--bezel-a), var(--bezel-c));
+    transform: translateX(-50%);
+    z-index: 2;
+  }
+
+  .lug.top { top: -10px; border-radius: 6px 6px 0 0; clip-path: polygon(15% 100%, 85% 100%, 100% 0, 0 0); }
+  .lug.bottom { bottom: -10px; border-radius: 0 0 6px 6px; clip-path: polygon(0 100%, 100% 100%, 85% 0, 15% 0); }
+
+  .crown {
+    position: absolute;
+    right: -13px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 22px;
+    border-radius: 3px;
+    background: repeating-linear-gradient(180deg, var(--metal-a) 0px, var(--metal-a) 2px, var(--metal-b) 2px, var(--metal-b) 3px);
+    box-shadow: 1px 0 2px rgba(0, 0, 0, 0.35);
+    z-index: 4;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .rig[data-running="true"] .crown {
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 45%, transparent), 1px 0 2px rgba(0, 0, 0, 0.35);
+  }
+
+  .pusher {
+    position: absolute;
+    right: -16px;
+    width: 26px;
+    height: 30px;
+    border: none;
+    border-radius: 4px;
+    background: linear-gradient(180deg, var(--metal-a), var(--metal-b));
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    z-index: 4;
+    padding: 0;
+  }
+
+  .pusher:active { transform: translateX(2px); }
+  .pusher:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .pusher:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .pusher.start { top: 16%; }
+  .pusher.lap { bottom: 16%; }
+
+  .tick { stroke: var(--dial-tick-minor); stroke-width: 1.2; }
+  .tick.major { stroke: var(--dial-tick); stroke-width: 2; }
+  .dial-face { fill: var(--dial); }
+  .dial-rim { fill: none; stroke: var(--dial-edge); stroke-width: 1.5; }
+
+  .numeral {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    fill: var(--ink);
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+
+  .mouse-fill { fill: var(--ink); }
+  .mouse-line { stroke: var(--ink); fill: none; stroke-linecap: round; }
+  .mouse-eye { fill: var(--dial); }
+  .mouse-nose { fill: var(--accent); }
+
+  .dial-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 7px;
+    letter-spacing: 0.16em;
+    fill: var(--ink-faint);
+    text-anchor: middle;
+  }
+
+  .hand-split { stroke: var(--accent); stroke-width: 1.6; stroke-linecap: round; }
+  .hand-split.catching { transition: transform 0.5s cubic-bezier(0.3, 0, 0.2, 1); }
+
+  .pivot { fill: var(--hand-main); }
+  .pivot-accent { fill: var(--accent); }
+
+  .state-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .state-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-faint); }
+  .rig[data-running="true"] .state-dot { background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+  .rig[data-running="true"] .state-row { color: var(--accent); }
+
+  .laps-card {
+    background: var(--card);
+    border: 1px solid var(--card-line);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .laps-head {
+    display: grid;
+    grid-template-columns: 2.6rem 1fr 1fr;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--card-line);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .laps-head span:nth-child(2), .laps-head span:nth-child(3),
+  .lap-row span:nth-child(2), .lap-row span:nth-child(3) { text-align: right; }
+
+  .laps-list { max-height: 200px; overflow-y: auto; display: flex; flex-direction: column-reverse; }
+
+  .laps-empty { padding: 26px 20px; text-align: center; color: var(--ink-faint); font-size: 13px; }
+
+  .lap-row {
+    display: grid;
+    grid-template-columns: 2.6rem 1fr 1fr;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--card-line);
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 13.5px;
+  }
+
+  .lap-row:first-child { border-bottom: none; }
+  .lap-row .idx { font-family: 'Barlow Condensed', sans-serif; font-weight: 600; color: var(--ink-faint); }
+  .lap-row .split { color: var(--ink-dim); }
+  .lap-row.fastest .delta { color: var(--accent-2); font-weight: 700; }
+  .lap-row.slowest .delta { color: var(--accent); font-weight: 700; }
+
+  .hint {
+    text-align: center;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    color: var(--ink-faint);
+  }
+
+  .hint kbd {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--card);
+    border: 1px solid var(--card-line);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 10px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hand-split.catching { transition: none; }
+  }
+</style>
+
+<div class="rig" id="rig" data-running="false">
+  <div class="brand">
+    <span class="brand-name">Split Second</span>
+    <span class="brand-unit">MEET TICKER</span>
+  </div>
+
+  <div class="watch">
+    <div class="strap top"></div>
+    <div class="keeper top"></div>
+
+    <div class="case-wrap">
+      <div class="lug top"></div>
+      <div class="lug bottom"></div>
+      <div class="crown"></div>
+      <button class="pusher start" id="primaryBtn" aria-label="Start or stop"></button>
+      <button class="pusher lap" id="lapBtn" disabled aria-label="Lap or reset"></button>
+
+      <svg viewBox="0 0 200 200" role="img" aria-label="Analog stopwatch face">
+        <circle class="dial-face" cx="100" cy="100" r="92"></circle>
+        <circle class="dial-rim" cx="100" cy="100" r="92"></circle>
+        <g id="mainTicks"></g>
+        <text class="dial-label" x="100" y="161">60-SECOND DIAL</text>
+
+        <!-- Ticker, an original mouse mascot -->
+        <g id="mouse">
+          <path class="mouse-line" stroke-width="3.6" d="M92,123 L87,144"></path>
+          <path class="mouse-line" stroke-width="3.6" d="M108,123 L113,144"></path>
+          <ellipse class="mouse-fill" cx="85" cy="147" rx="7" ry="4.5"></ellipse>
+          <ellipse class="mouse-fill" cx="115" cy="147" rx="7" ry="4.5"></ellipse>
+
+          <ellipse class="mouse-fill" cx="100" cy="97" rx="15" ry="27"></ellipse>
+
+          <path class="mouse-line" stroke-width="4.2" d="M100,100 L80,112"></path>
+          <circle class="mouse-fill" cx="79" cy="113" r="4"></circle>
+
+          <circle class="mouse-fill" cx="113" cy="41" r="8"></circle>
+          <circle class="mouse-fill" cx="87" cy="41" r="8"></circle>
+          <circle class="mouse-fill" cx="100" cy="54" r="15"></circle>
+          <circle class="mouse-eye" cx="94" cy="52" r="2"></circle>
+          <circle class="mouse-eye" cx="106" cy="52" r="2"></circle>
+          <circle class="mouse-nose" cx="100" cy="59" r="2.3"></circle>
+        </g>
+
+        <!-- split (rattrapante) needle -->
+        <line class="hand-split" id="splitHand" x1="100" y1="100" x2="100" y2="30"></line>
+
+        <!-- Ticker's arm doubles as the second hand -->
+        <g id="secondHand">
+          <path class="mouse-line" stroke-width="4.2" d="M100,100 L100,28"></path>
+          <circle class="mouse-fill" cx="100" cy="27" r="4.2"></circle>
+        </g>
+
+        <circle class="pivot" cx="100" cy="100" r="3.2"></circle>
+        <circle class="pivot-accent" cx="100" cy="100" r="1.3"></circle>
+      </svg>
+    </div>
+
+    <div class="keeper bottom"></div>
+    <div class="strap bottom"></div>
+  </div>
+
+  <div class="state-row"><span class="state-dot"></span><span id="stateText">Ready</span></div>
+
+  <div class="laps-card">
+    <div class="laps-head"><span>Lap</span><span>Split</span><span>Lap time</span></div>
+    <div class="laps-list" id="lapsList">
+      <div class="laps-empty" id="lapsEmpty">Splits appear here once you lap a running watch.</div>
+    </div>
+  </div>
+
+  <div class="hint"><kbd>Space</kbd> start / stop &nbsp; <kbd>L</kbd> lap &nbsp; <kbd>R</kbd> reset</div>
+</div>
+
+<script>
+  (function () {
+    const NS = 'http://www.w3.org/2000/svg';
+    const mainTicks = document.getElementById('mainTicks');
+
+    for (let i = 0; i < 60; i++) {
+      const angle = (i / 60) * Math.PI * 2 - Math.PI / 2;
+      const major = i % 5 === 0;
+      const rOuter = 90;
+      const rInner = major ? 79 : 84;
+      const x1 = 100 + rOuter * Math.cos(angle), y1 = 100 + rOuter * Math.sin(angle);
+      const x2 = 100 + rInner * Math.cos(angle), y2 = 100 + rInner * Math.sin(angle);
+      const line = document.createElementNS(NS, 'line');
+      line.setAttribute('x1', x1.toFixed(2)); line.setAttribute('y1', y1.toFixed(2));
+      line.setAttribute('x2', x2.toFixed(2)); line.setAttribute('y2', y2.toFixed(2));
+      line.setAttribute('class', 'tick' + (major ? ' major' : ''));
+      mainTicks.appendChild(line);
+
+      if (major) {
+        const rNum = 71;
+        const xn = 100 + rNum * Math.cos(angle), yn = 100 + rNum * Math.sin(angle);
+        const text = document.createElementNS(NS, 'text');
+        text.setAttribute('x', xn.toFixed(2)); text.setAttribute('y', yn.toFixed(2));
+        text.setAttribute('class', 'numeral');
+        text.textContent = String(i);
+        mainTicks.appendChild(text);
+      }
+    }
+
+    const rig = document.getElementById('rig');
+    const stateText = document.getElementById('stateText');
+    const primaryBtn = document.getElementById('primaryBtn');
+    const lapBtn = document.getElementById('lapBtn');
+    const lapsList = document.getElementById('lapsList');
+    const lapsEmpty = document.getElementById('lapsEmpty');
+    const secondHand = document.getElementById('secondHand');
+    const splitHand = document.getElementById('splitHand');
+
+    const SPLIT_FREEZE_MS = 1100;
+    let running = false;
+    let startedAt = 0;
+    let accumulated = 0;
+    let rafId = null;
+    let laps = [];
+    let splitFrozenUntil = 0;
+    let splitCatching = false;
+
+    function pad(n, w) { return String(Math.floor(n)).padStart(w, '0'); }
+
+    function format(elapsedMs) {
+      const totalCs = Math.floor(elapsedMs / 10);
+      const cs = totalCs % 100;
+      const totalSec = Math.floor(totalCs / 100);
+      const ss = totalSec % 60;
+      const mm = Math.floor(totalSec / 60);
+      return pad(mm, 2) + ':' + pad(ss, 2) + '.' + pad(cs, 2);
+    }
+
+    function currentElapsed() {
+      return accumulated + (running ? performance.now() - startedAt : 0);
+    }
+
+    function rotate(el, deg) { el.setAttribute('transform', 'rotate(' + deg.toFixed(2) + ' 100 100)'); }
+
+    function render() {
+      const elapsed = currentElapsed();
+      const secAngle = ((elapsed % 60000) / 60000) * 360;
+      rotate(secondHand, secAngle);
+
+      const now = performance.now();
+      if (now >= splitFrozenUntil) {
+        if (splitCatching) {
+          splitHand.classList.remove('catching');
+          splitCatching = false;
+        }
+        rotate(splitHand, secAngle);
+      }
+    }
+
+    function loop() {
+      render();
+      if (running) rafId = requestAnimationFrame(loop);
+    }
+
+    function updatePushers() {
+      primaryBtn.setAttribute('aria-label', running ? 'Stop' : 'Start');
+      lapBtn.setAttribute('aria-label', running ? 'Lap' : 'Reset');
+    }
+
+    function setRunning(next) {
+      running = next;
+      rig.dataset.running = String(running);
+      if (running) {
+        startedAt = performance.now();
+        stateText.textContent = 'Running';
+        lapBtn.disabled = false;
+        rafId = requestAnimationFrame(loop);
+      } else {
+        accumulated = currentElapsed();
+        cancelAnimationFrame(rafId);
+        stateText.textContent = accumulated > 0 ? 'Stopped' : 'Ready';
+        lapBtn.disabled = accumulated === 0;
+        render();
+      }
+      updatePushers();
+    }
+
+    function addLap() {
+      if (!running) return;
+      const elapsed = currentElapsed();
+      const prev = laps.length ? laps[laps.length - 1].elapsed : 0;
+      laps.push({ elapsed, lapDuration: elapsed - prev });
+      renderLaps();
+
+      splitHand.classList.remove('catching');
+      rotate(splitHand, ((elapsed % 60000) / 60000) * 360);
+      splitFrozenUntil = performance.now() + SPLIT_FREEZE_MS;
+      splitCatching = true;
+      setTimeout(() => { if (splitCatching) splitHand.classList.add('catching'); }, 30);
+    }
+
+    function renderLaps() {
+      lapsList.innerHTML = '';
+      if (laps.length === 0) { lapsList.appendChild(lapsEmpty); return; }
+      let fastestIdx = 0, slowestIdx = 0;
+      if (laps.length > 1) {
+        laps.forEach((l, i) => {
+          if (l.lapDuration < laps[fastestIdx].lapDuration) fastestIdx = i;
+          if (l.lapDuration > laps[slowestIdx].lapDuration) slowestIdx = i;
+        });
+      }
+      laps.forEach((l, i) => {
+        const row = document.createElement('div');
+        row.className = 'lap-row';
+        if (laps.length > 1 && i === fastestIdx) row.classList.add('fastest');
+        if (laps.length > 1 && i === slowestIdx) row.classList.add('slowest');
+        row.innerHTML =
+          '<span class="idx">' + String(i + 1).padStart(2, '0') + '</span>' +
+          '<span class="split">' + format(l.elapsed) + '</span>' +
+          '<span class="delta">' + format(l.lapDuration) + '</span>';
+        lapsList.appendChild(row);
+      });
+    }
+
+    function reset() {
+      if (running) return;
+      accumulated = 0;
+      laps = [];
+      renderLaps();
+      stateText.textContent = 'Ready';
+      lapBtn.disabled = true;
+      splitFrozenUntil = 0;
+      splitHand.classList.remove('catching');
+      render();
+    }
+
+    primaryBtn.addEventListener('click', () => setRunning(!running));
+    lapBtn.addEventListener('click', () => { running ? addLap() : reset(); });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      if (e.code === 'Space') { e.preventDefault(); setRunning(!running); }
+      else if (e.key === 'l' || e.key === 'L') { if (running) addLap(); }
+      else if (e.key === 'r' || e.key === 'R') { if (!running) reset(); }
+    });
+
+    updatePushers();
+    render();
+  })();
+</script>
