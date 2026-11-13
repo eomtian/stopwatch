@@ -94,7 +94,7 @@
   .stage canvas { pointer-events: none; }
 
   .whiteout, .flash { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
-  .whiteout { background: #f4f7fa; }
+  .whiteout { background: #fbe1cf; }
   .flash { background: radial-gradient(circle at 50% 30%, #fff 0 30%, #fff7d6 60%, #ffd27a 100%); }
   .flash.violet { background: radial-gradient(circle at 50% 40%, #fff 0 25%, #f1dcff 55%, #9c7bff 100%); }
   .flash.on { animation: flash .9s ease-out; }
@@ -185,6 +185,29 @@
   .rays { animation: rays 7s ease-in-out infinite; }
   @keyframes rays { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
   .seed { animation: drift 12s linear infinite; }
+  .lantern { transform-box: fill-box; transform-origin: 50% 0; animation: swing 3s ease-in-out infinite alternate; }
+  @keyframes swing { from { transform: rotate(-5deg); } to { transform: rotate(5deg); } }
+  .train { animation: train 24s linear infinite; }
+  @keyframes train { from { transform: translateX(-120px); } to { transform: translateX(540px); } }
+  .walker { animation: walkx 20s ease-in-out infinite alternate; }
+  @keyframes walkx { to { transform: translateX(46px); } }
+  .bob { animation: bob .9s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(-2px); } }
+  .leg-a, .leg-b { transform-box: fill-box; transform-origin: 50% 0; animation: leg .9s ease-in-out infinite; }
+  .leg-b { animation-delay: -.45s; }
+  @keyframes leg { 0%, 100% { transform: rotate(12deg); } 50% { transform: rotate(-12deg); } }
+  .steam circle { transform-box: fill-box; transform-origin: center; animation: steam 3s ease-out infinite; }
+  @keyframes steam { from { transform: translate(0, 0) scale(.5); opacity: .85; } to { transform: translate(8px, -26px) scale(1.8); opacity: 0; } }
+  .skyl { animation: skyl 4s ease-in-out infinite alternate; }
+  @keyframes skyl { to { transform: translate(4px, -9px); } }
+  .ship { animation: ship 22s ease-in-out infinite alternate; }
+  @keyframes ship { to { transform: translateX(60px); } }
+  .wing { transform-box: fill-box; transform-origin: 50% 100%; animation: flap .45s ease-in-out infinite alternate; }
+  @keyframes flap { to { transform: scaleY(-.5); } }
+  .prop { transform-box: fill-box; transform-origin: center; animation: prop .15s linear infinite; }
+  @keyframes prop { 50% { transform: scaleY(.15); } }
+  .meteor { opacity: 0; animation: meteor 3.2s ease-in infinite; }
+  @keyframes meteor { 0% { opacity: 0; transform: translate(0, 0); } 8% { opacity: 1; } 40% { opacity: 0; transform: translate(90px, 44px); } 100% { opacity: 0; transform: translate(90px, 44px); } }
   @keyframes drift {
     0% { transform: translate(-30px, 20px) rotate(0); opacity: 0; }
     10% { opacity: 1; }
@@ -278,30 +301,32 @@
     <svg class="sprig" viewBox="0 0 40 20" aria-hidden="true"><path d="M2 14 C12 14 24 10 38 4" stroke="#6b8a3a" stroke-width="1.6" fill="none"/><path d="M12 13 q-2 -8 4 -10 q1 7 -4 10z M22 10 q0 -8 6 -9 q0 7 -6 9z M30 7 q2 -6 7 -6 q-2 6 -7 6z" fill="#7fa64a"/></svg>
     <h1>서거름 스탑워치</h1>
     <svg class="sprig flip" viewBox="0 0 40 20" aria-hidden="true"><path d="M2 14 C12 14 24 10 38 4" stroke="#6b8a3a" stroke-width="1.6" fill="none"/><path d="M12 13 q-2 -8 4 -10 q1 7 -4 10z M22 10 q0 -8 6 -9 q0 7 -6 9z M30 7 q2 -6 7 -6 q-2 6 -7 6z" fill="#7fa64a"/></svg>
-    <p>작은 똥 하나가 하늘까지 자라는 시간</p>
+    <p>작은 거름 하나가 하늘까지 자라는 시간</p>
   </header>
   <div class="stage idle" id="stage">
     <svg viewBox="0 0 400 300" aria-label="서거름의 입에서 자라 우주와 은하계까지 뻗는 나무">
       <defs>
         <linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="270" x2="0" y2="-3700">
-          <stop offset="0" stop-color="#fbf6dc"/>
-          <stop offset=".018" stop-color="#bfe4f4"/>
-          <stop offset=".06" stop-color="#77bdee"/>
-          <stop offset=".16" stop-color="#4c9ee6"/>
-          <stop offset=".3" stop-color="#3b8bdc"/>
-          <stop offset=".48" stop-color="#3f88d6"/>
+          <stop offset="0" stop-color="#ffd99a"/>
+          <stop offset=".015" stop-color="#ffb07e"/>
+          <stop offset=".045" stop-color="#e98a8c"/>
+          <stop offset=".1" stop-color="#b47aa6"/>
+          <stop offset=".2" stop-color="#7a6fae"/>
+          <stop offset=".34" stop-color="#4f5ea6"/>
+          <stop offset=".48" stop-color="#36478e"/>
           <stop offset=".62" stop-color="#2d62b2"/>
           <stop offset=".78" stop-color="#1f3079"/>
           <stop offset=".9" stop-color="#14194b"/>
           <stop offset="1" stop-color="#080a18"/>
         </linearGradient>
+        <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6c08e"/><stop offset=".45" stop-color="#d996a0"/><stop offset="1" stop-color="#8a74ae"/></linearGradient>
         <linearGradient id="hill1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a6d07a"/><stop offset=".35" stop-color="#7fb35a"/><stop offset="1" stop-color="#5d8f44"/></linearGradient>
-        <linearGradient id="hill2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fc45e"/><stop offset=".3" stop-color="#6aa346"/><stop offset="1" stop-color="#4a7d35"/></linearGradient>
-        <linearGradient id="hill3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cb74e"/><stop offset=".3" stop-color="#5a923d"/><stop offset="1" stop-color="#3e6c2e"/></linearGradient>
+        <linearGradient id="hill2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9aae5a"/><stop offset=".3" stop-color="#6c8a42"/><stop offset="1" stop-color="#465f32"/></linearGradient>
+        <linearGradient id="hill3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7e9a4a"/><stop offset=".3" stop-color="#58753a"/><stop offset="1" stop-color="#34492a"/></linearGradient>
         <radialGradient id="sunGlow">
-          <stop offset="0" stop-color="#fff6d6" stop-opacity=".9"/>
-          <stop offset=".4" stop-color="#fff1c4" stop-opacity=".35"/>
-          <stop offset="1" stop-color="#fff1c4" stop-opacity="0"/>
+          <stop offset="0" stop-color="#fff2c4" stop-opacity=".95"/>
+          <stop offset=".35" stop-color="#ffc27a" stop-opacity=".45"/>
+          <stop offset="1" stop-color="#ff9a6a" stop-opacity="0"/>
         </radialGradient>
         <radialGradient id="clay" cx="38%" cy="30%" r="75%">
           <stop offset="0" stop-color="var(--clay-hi)"/>
@@ -332,15 +357,15 @@
       <!-- 뒤쪽 월드: 하늘, 장식 -->
       <g class="cam">
         <rect x="-60" y="-200000" width="520" height="200400" fill="url(#sky)"/>
-        <circle cx="30" cy="10" r="260" fill="url(#sunGlow)"/>
-        <g class="rays" fill="#fff8dc">
-          <path d="M20 -10 L460 120 L460 170 Z" opacity=".16"/>
-          <path d="M20 -10 L420 260 L360 270 Z" opacity=".12"/>
-          <path d="M20 -10 L250 270 L210 270 Z" opacity=".1"/>
-          <path d="M20 -10 L460 30 L460 60 Z" opacity=".1"/>
+        <circle cx="70" cy="200" r="300" fill="url(#sunGlow)"/>
+        <g class="rays" fill="#ffe2a8">
+          <path d="M70 200 L460 40 L460 90 Z" opacity=".14"/>
+          <path d="M70 200 L330 -80 L260 -80 Z" opacity=".12"/>
+          <path d="M70 200 L120 -80 L70 -80 Z" opacity=".1"/>
+          <path d="M70 200 L460 150 L460 175 Z" opacity=".1"/>
         </g>
-        <circle cx="30" cy="10" r="20" fill="#fffbe8"/>
-        <circle cx="30" cy="10" r="34" fill="#fff6d0" opacity=".5"/>
+        <circle cx="70" cy="200" r="40" fill="#ffd28e" opacity=".45"/>
+        <circle cx="70" cy="200" r="22" fill="#fff1c8"/>
         <g id="decorBack"></g>
       </g>
 
@@ -360,25 +385,17 @@
 
       <!-- 앞쪽 월드: 땅, 서거름, 나무, 앞 구름 -->
       <g class="cam">
-        <!-- 먼 산맥 (공기 원근: 푸르스름하게) -->
-        <path d="M-60 222 L-10 196 L30 208 L80 178 L120 200 L170 186 L220 204 L262 180 L300 196 L350 172 L400 194 L460 186 L460 260 L-60 260 Z" fill="#a9c2d8"/>
-        <path d="M80 178 L96 190 L88 192 Z M262 180 L276 190 L268 191 Z M350 172 L366 184 L357 185 Z" fill="#e8f0f6"/>
-        <path d="M-60 232 C0 214 50 220 100 230 C150 240 190 214 250 216 C310 218 360 236 460 226 L460 270 L-60 270 Z" fill="#88ab8f"/>
-        <!-- 언덕 1 + 외딴 큰 나무 -->
-        <path d="M-60 240 C10 212 80 216 140 230 C200 244 250 208 320 211 C385 214 425 232 460 238 L460 420 L-60 420 Z" fill="url(#hill1)" stroke="#5f8a46" stroke-width="1.4"/>
-        <path d="M250 214 C290 210 320 211 360 216 C340 222 300 226 270 224 Z" fill="#c4e18f" opacity=".7"/>
-        <g transform="translate(330 212)">
-          <path d="M-2 0 q-1 -9 -1 -16 h6 q0 7 -1 16z" fill="#5d4128" stroke="#3d2a17" stroke-width="1"/>
-          <g fill="#4f8236" stroke="#2f5524" stroke-width="1.1">
-            <circle cx="0" cy="-26" r="14"/><circle cx="-12" cy="-18" r="10"/><circle cx="12" cy="-18" r="10"/><circle cx="0" cy="-36" r="9"/>
-          </g>
-          <g fill="#79ad4c"><circle cx="-3" cy="-29" r="10"/><circle cx="-13" cy="-21" r="6"/><circle cx="-2" cy="-38" r="6"/></g>
-          <circle cx="-6" cy="-33" r="4" fill="#b2d872"/>
-        </g>
+        <!-- 노을빛 얕은 바다 -->
+        <rect x="-60" y="226" width="520" height="60" fill="url(#sea)"/>
+        <path d="M-60 226 C20 220 40 222 90 225 L-60 228Z M240 226 C280 219 300 220 330 224 L240 227Z" fill="#8e6f9e" opacity=".8"/>
+        <g id="seaShine"></g>
+        <g id="pagoda"></g>
+        <g id="rail"></g>
+        <g id="walker"></g>
         <!-- 언덕 2, 3 -->
-        <path d="M-60 258 C60 245 140 262 220 254 C300 246 360 259 460 250 L460 420 L-60 420 Z" fill="url(#hill2)" stroke="#4f7f3a" stroke-width="1.4"/>
-        <path d="M-60 258 C20 250 60 252 100 255 C70 262 20 264 -60 266 Z" fill="#b6db7c" opacity=".6"/>
-        <path d="M-60 282 C80 271 200 290 320 278 C380 273 420 280 460 277 L460 420 L-60 420 Z" fill="url(#hill3)" stroke="#43733a" stroke-width="1.4"/>
+        <path d="M-60 258 C60 245 140 262 220 254 C300 246 360 259 460 250 L460 420 L-60 420 Z" fill="url(#hill2)" stroke="#f3b878" stroke-width="1.6"/>
+        <path d="M-60 258 C20 250 60 252 100 255 C70 262 20 264 -60 266 Z" fill="#e9b872" opacity=".45"/>
+        <path d="M-60 282 C80 271 200 290 320 278 C380 273 420 280 460 277 L460 420 L-60 420 Z" fill="url(#hill3)" stroke="#d99a62" stroke-width="1.4"/>
         <g id="bushes"></g>
         <g id="meadow"></g>
         <ellipse cx="200" cy="257" rx="84" ry="9" fill="#2a4a1e" opacity=".3"/>
@@ -437,6 +454,7 @@
         <g id="grassFront"></g>
         <g id="tree"></g>
         <g id="fluff"></g>
+        <g id="lanterns"></g>
         <path id="lip" d="M192 210 q9 5 18 0" stroke="#4a2414" stroke-width="3" fill="none" stroke-linecap="round" opacity="0"/>
         <g id="decorFront"></g>
         <g id="ring"></g>
@@ -576,10 +594,10 @@
     `<ellipse cx="${x + dx}" cy="${y + dy}" rx="${rx * s}" ry="${ry * s}"/>`).join('');
   const cloud = (x, y, k, o = 1) =>
     `<g opacity="${o}" transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${k.toFixed(2)})">
-      <g fill="#9bb4dc">${puffs(0, 0, 1)}</g>
-      <g fill="#dde7f6">${puffs(-3, -5, .93)}</g>
-      <g fill="#ffffff">${puffs(-6, -9, .8)}</g>
-      <g fill="#fffaf0" opacity=".75">${puffs(-9, -12, .6)}</g></g>`;
+      <g fill="#8c6fa6">${puffs(0, 0, 1)}</g>
+      <g fill="#e39a9e">${puffs(-3, -5, .93)}</g>
+      <g fill="#ffcfa6">${puffs(-6, -9, .8)}</g>
+      <g fill="#fff0cc" opacity=".85">${puffs(-9, -12, .55)}</g></g>`;
 
   /* ---------- 대기권 안쪽 장식 (월드 좌표) ---------- */
   (function buildDecor() {
@@ -587,13 +605,13 @@
     let back = '', front = '';
     // 지평선 위로 솟은 커다란 적란운
     back += cloud(300, 226, 2.8) + cloud(350, 196, 2.2) + cloud(290, 166, 1.9) + cloud(334, 128, 1.6) + cloud(304, 92, 1.3) + cloud(330, 62, .9);
-    back += cloud(30, 230, 2.2) + cloud(58, 196, 1.4) + cloud(26, 174, .9);
+    back += cloud(-10, 150, 1.4, .9) + cloud(150, 120, 1.1, .85);
     back += cloud(160, 60, .75, .9) + cloud(205, 36, .5, .8);
 
     // 바람에 흔들리는 풀 (세 무리로 나눠 물결치듯)
     const blade = (x, y, hgt, lean, c) =>
       `<path d="M${(x - 1.6).toFixed(1)} ${y} Q${(x + lean * .4).toFixed(1)} ${(y - hgt * .6).toFixed(1)} ${(x + lean).toFixed(1)} ${(y - hgt).toFixed(1)} Q${(x + lean * .4 + 1.4).toFixed(1)} ${(y - hgt * .55).toFixed(1)} ${(x + 1.6).toFixed(1)} ${y}Z" fill="${c}"/>`;
-    const greens = ['#4d8a34', '#5f9c3e', '#6fae47', '#87c25a', '#3f7a2c'];
+    const greens = ['#4d6e30', '#5f803a', '#738f40', '#a3a85a', '#3d5a2a'];
     const groups = ['', '', ''];
     for (let i = 0; i < 150; i++) {
       const x = -30 + r() * 460, y = 262 + r() * 40;
@@ -617,15 +635,82 @@
       <g fill="#3f7a2c" stroke="#2c5520" stroke-width="1.2"><circle cx="0" cy="0" r="10"/><circle cx="-10" cy="4" r="7"/><circle cx="10" cy="4" r="7"/></g>
       <g fill="#6aa846"><circle cx="-2" cy="-3" r="7"/><circle cx="-11" cy="2" r="4"/></g>
       <circle cx="-4" cy="-6" r="3" fill="#a9d36a"/></g>`;
-    $('bushes').innerHTML = bush(30, 244, 1.2) + bush(70, 250, .9) + bush(388, 250, 1.3) + bush(360, 256, .8) + bush(150, 236, .7);
+    $('bushes').innerHTML = bush(24, 258, 1.1) + bush(392, 254, 1.25) + bush(362, 260, .8);
 
-    // 바람에 날리는 민들레 씨앗
+    // 물결 반짝임 + 해 그림자 기둥
+    let shine = '';
+    for (let i = 0; i < 26; i++) {
+      const x = -40 + r() * 460, y = 230 + r() * 26, w = 6 + r() * 18;
+      shine += `<path d="M${x.toFixed(0)} ${y.toFixed(0)} h${w.toFixed(0)}" stroke="#ffe9c4" stroke-width="1" opacity="${(.3 + r() * .4).toFixed(2)}" stroke-linecap="round"/>`;
+    }
+    for (let y = 229; y < 258; y += 3) shine += `<path d="M${(56 + (y - 229) * .2).toFixed(0)} ${y} h${(28 - (y - 229) * .4).toFixed(0)}" stroke="#fff2c4" stroke-width="1.4" opacity=".7" stroke-linecap="round"/>`;
+    $('seaShine').innerHTML = shine;
+
+    // 물 위의 탑 (여러 겹 지붕, 불 켜진 창)
+    let P = `<ellipse cx="0" cy="2" rx="36" ry="5" fill="#5c4a6a"/>`;
+    for (let i = 0; i < 4; i++) {
+      const w = 46 - i * 9, yb = -i * 15;
+      P += `<rect x="${-w / 2 + 3}" y="${yb - 10}" width="${w - 6}" height="10" fill="#efc896" stroke="#5a2a1e" stroke-width=".8"/>`;
+      for (let wx = -w / 2 + 6; wx < w / 2 - 6; wx += 6) P += `<rect x="${wx}" y="${yb - 8}" width="3.4" height="5" fill="#ffd36e"/>`;
+      P += `<path d="M${-w / 2 - 5} ${yb - 9} Q0 ${yb - 16} ${w / 2 + 5} ${yb - 9} L${w / 2 - 1} ${yb - 13} Q0 ${yb - 19} ${-w / 2 + 1} ${yb - 13}Z" fill="#c64a2e" stroke="#4a2018" stroke-width=".8"/>`;
+    }
+    P += `<path d="M0 -72 v-10" stroke="#4a2018" stroke-width="1.4"/><circle cy="-84" r="2" fill="#e8b04a"/>`;
+    P += `<rect x="14" y="-52" width="4" height="12" fill="#6a4a3a"/><g class="steam" fill="#f8e6ea">${[0, 1, 2].map(i => `<circle cx="16" cy="-56" r="3" style="animation-delay:-${i}s"/>`).join('')}</g>`;
+    $('pagoda').innerHTML = `<g transform="translate(345 232)">${P}</g><g transform="translate(345 234) scale(1 -.5)" opacity=".25">${P}</g>`;
+
+    // 물에 잠긴 철길과 미끄러지듯 달리는 기차
+    let rail = `<path d="M-60 245 H460" stroke="#4b3d5a" stroke-width="1.2" opacity=".8"/>`;
+    for (let x = -60; x < 460; x += 16) rail += `<path d="M${x} 245 v4" stroke="#4b3d5a" stroke-width="1" opacity=".6"/>`;
+    const car = dx => `<g transform="translate(${dx} 0)">
+      <rect x="0" y="-14" width="34" height="13" rx="3" fill="#2f5f6c" stroke="#1d3940" stroke-width=".9"/>
+      <rect x="-1" y="-16" width="36" height="3.5" rx="1.5" fill="#1d3940"/>
+      ${[4, 11, 18, 25].map(wx => `<rect x="${wx}" y="-11" width="5" height="5" rx="1" fill="#ffd36e"/>`).join('')}</g>`;
+    rail += `<g transform="translate(0 244)"><g class="train">${car(0)}${car(37)}<circle cx="72" cy="-6" r="1.6" fill="#fff4c4"/>
+      <g transform="scale(1 -.6) translate(0 2)" opacity=".28">${car(0)}${car(37)}</g></g></g>`;
+    $('rail').innerHTML = rail;
+
+    // 증기를 뿜으며 걷는 작은 오두막 (직접 디자인)
+    $('walker').innerHTML = `<g transform="translate(36 246)"><g class="walker"><g class="bob">
+      <path class="leg-a" d="M-8 -30 L-15 -15 L-9 0" stroke="#3e3240" stroke-width="3" fill="none" stroke-linejoin="round"/>
+      <path class="leg-b" d="M8 -30 L15 -15 L9 0" stroke="#3e3240" stroke-width="3" fill="none" stroke-linejoin="round"/>
+      <rect x="-22" y="-57" width="40" height="28" rx="3" fill="#8b7f92" stroke="#2f2634" stroke-width="1.1"/>
+      <rect x="-31" y="-51" width="12" height="17" rx="2" fill="#b07a5a" stroke="#2f2634" stroke-width="1"/>
+      <rect x="14" y="-47" width="12" height="12" rx="2" fill="#6f8a8f" stroke="#2f2634" stroke-width="1"/>
+      <path d="M-25 -57 L-6 -72 L13 -57Z" fill="#6d4a4a" stroke="#2f2634" stroke-width="1"/>
+      <path d="M2 -61 L14 -74 L25 -59Z" fill="#4f6a7a" stroke="#2f2634" stroke-width="1"/>
+      <rect x="-15" y="-51" width="7" height="7" fill="#ffd36e" stroke="#2f2634" stroke-width=".7"/>
+      <circle cx="6" cy="-44" r="4" fill="#ffd36e" stroke="#2f2634" stroke-width=".9"/>
+      <rect x="-28" y="-46" width="5" height="5" fill="#ffd36e"/>
+      <path d="M-22 -34 h40" stroke="#2f2634" stroke-width=".8" opacity=".6"/>
+      <rect x="8" y="-84" width="5" height="14" fill="#4a3e48" stroke="#2f2634" stroke-width=".8"/>
+      <g class="steam" fill="#efe3ea">${[0, 1, 2].map(i => `<circle cx="10.5" cy="-88" r="3.2" style="animation-delay:-${i}s"/>`).join('')}</g>
+    </g></g></g>`;
+
+    // 하늘에 걸린 붉은 등롱 줄
+    const L0 = [130, -8], L1 = [275, 50], L2 = [432, 2];
+    const q = (t, i) => (1 - t) ** 2 * L0[i] + 2 * (1 - t) * t * L1[i] + t * t * L2[i];
+    let lan = `<path d="M${L0[0]} ${L0[1]} Q${L1[0]} ${L1[1]} ${L2[0]} ${L2[1]}" stroke="#3d2a20" stroke-width="1" fill="none"/>`;
+    for (let t = .1; t < .95; t += .13) {
+      const x = q(t, 0), y = q(t, 1);
+      lan += `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})"><g class="lantern" style="animation-delay:-${(t * 3).toFixed(1)}s">
+        <path d="M0 0 v5" stroke="#3d2a20" stroke-width=".8"/>
+        <circle cy="15" r="15" fill="#ffae5a" opacity=".22"/>
+        <rect x="-4" y="4" width="8" height="2.4" rx="1" fill="#3a2418"/>
+        <ellipse cy="15" rx="8" ry="9.5" fill="#d8432a" stroke="#5a1e14" stroke-width=".8"/>
+        <ellipse cy="15" rx="4" ry="7" fill="#ffb86a" opacity=".55"/>
+        <path d="M-7.6 12 h15.2 M-8 15 h16 M-7.6 18 h15.2" stroke="#8a2a1a" stroke-width=".5" opacity=".7"/>
+        <rect x="-4" y="23.6" width="8" height="2.4" rx="1" fill="#3a2418"/>
+        <path d="M0 26 v6" stroke="#c8902a" stroke-width="1.2"/></g></g>`;
+    }
+    $('lanterns').innerHTML = lan;
+
+    // 떠다니는 작은 빛 (반딧불)
     let fluff = '';
     for (let i = 0; i < 7; i++) {
       const x = r() * 360, y = 150 + r() * 110;
       const rays = [0, 40, 80, 120, 160, 200, 240, 280, 320].map(a => `<path d="M0 0 l0 -5" transform="rotate(${a})"/>`).join('');
       fluff += `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)})"><g class="seed" style="animation-delay:-${(r() * 10).toFixed(1)}s;animation-duration:${(9 + r() * 6).toFixed(1)}s">
-        <g stroke="#fffdf4" stroke-width=".8" opacity=".95">${rays}</g><path d="M0 0 l0 6" stroke="#e8e0c8" stroke-width=".8"/></g></g>`;
+        <circle r="6" fill="#ffe7a0" opacity=".22"/><circle r="2.6" fill="#ffefb0" opacity=".5"/><circle r="1.4" fill="#fffbe0"/></g></g>`;
     }
     $('fluff').innerHTML = fluff;
 
@@ -633,16 +718,32 @@
       const x = 20 + r() * 340, y = yAt(260 + r() * 500);
       back += `<path d="M${x} ${y} q5 -5 10 0 q5 -5 10 0" stroke="#5b6b7a" stroke-width="2" fill="none" stroke-linecap="round"/>`;
     }
-    back += `<g transform="translate(90 ${yAt(820)})">
-      <path d="M0 -30 c-26 0 -30 30 -10 46 l6 10 h8 l6 -10 c20 -16 16 -46 -10 -46z" fill="#ef7a5a"/>
-      <path d="M0 -30 c-8 0 -10 30 -4 46 h8 c6 -16 4 -46 -4 -46z" fill="#f6c453"/>
-      <rect x="-5" y="30" width="10" height="8" rx="2" fill="#8a5a2b"/></g>`;
-    for (let i = 0; i < 6; i++) back += cloud(20 + r() * 340, yAt(400 + r() * 900), .6 + r() * .5, .9);
-    back += `<g transform="translate(300 ${yAt(1320)})" fill="#e8eef4">
-      <rect x="-26" y="-4" width="52" height="8" rx="4"/>
-      <path d="M-4 0 l-12 -18 h6 l18 18z M-4 0 l-12 18 h6 l18 -18z" fill="#c9d4de"/>
-      <path d="M-26 0 l-6 -10 h5 l7 10z" fill="#c9d4de"/>
-      <path d="M26 2 h80" stroke="#fff" stroke-width="2" opacity=".7"/></g>`;
+    // 하늘 등불
+    for (let i = 0; i < 14; i++) {
+      const x = 20 + r() * 360, y = yAt(240 + r() * 1150), k = .7 + r() * .6;
+      back += `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${k.toFixed(2)})"><g class="skyl" style="animation-delay:-${(r() * 4).toFixed(1)}s">
+        <circle r="11" fill="#ffb35a" opacity=".22"/>
+        <path d="M-4 -6 L4 -6 L5.5 6 L-5.5 6Z" fill="#ffd58a" stroke="#b8642e" stroke-width=".7"/>
+        <path d="M-4 -6 L4 -6" stroke="#7a3e1e" stroke-width="1.2"/>
+        <ellipse cy="4" rx="2.4" ry="1.5" fill="#fff4c4"/></g></g>`;
+    }
+    // 날개를 퍼덕이는 비행선 (직접 디자인)
+    const ship = (x, h, k, flip) => `<g transform="translate(${x} ${yAt(h)}) scale(${flip ? -k : k} ${k})"><g class="ship">
+      <g class="wing" fill="#d9c6a2" stroke="#4a3a26" stroke-width=".8"><path d="M-12 -9 C-24 -26 -2 -30 4 -10Z"/><path d="M2 -9 C-2 -30 22 -28 14 -9Z"/></g>
+      <ellipse rx="32" ry="10" fill="#7d6a48" stroke="#33281a" stroke-width="1.2"/>
+      <path d="M-20 -8 v16 M-6 -10 v20 M8 -10 v20 M22 -7 v14" stroke="#5a4a32" stroke-width="1"/>
+      <ellipse cx="-6" cy="-4" rx="18" ry="3" fill="#a48e64" opacity=".8"/>
+      <path d="M30 0 L42 -9 L40 0 L42 9Z" fill="#5d4c34" stroke="#33281a" stroke-width=".8"/>
+      <rect x="-12" y="9" width="20" height="7" rx="2" fill="#4b3d2a" stroke="#33281a" stroke-width=".8"/>
+      <circle cx="-6" cy="12.5" r="1.6" fill="#ffd36e"/><circle cx="0" cy="12.5" r="1.6" fill="#ffd36e"/>
+      <g class="prop"><rect x="-37" y="-7" width="2.5" height="14" rx="1" fill="#33281a"/></g></g></g>`;
+    back += ship(110, 720, 1, false) + ship(300, 1180, .8, true) + ship(80, 1360, .55, false);
+    // 유성
+    for (let i = 0; i < 6; i++) {
+      const x = 60 + r() * 300, y = yAt(2450 + r() * 900);
+      back += `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)})"><g class="meteor" style="animation-delay:-${(r() * 3.2).toFixed(1)}s">
+        <path d="M0 0 L-46 -22" stroke="#fff3cf" stroke-width="1.6" stroke-linecap="round" opacity=".9"/><circle r="1.8" fill="#fffbe8"/></g></g>`;
+    }
     for (let i = 0; i < 34; i++) {
       const c = cloud(-30 + r() * 440, yAt(1480 + r() * 440), 1.2 + r() * 1.4, .95, i % 3 ? '#fff' : '#eef3f8');
       if (i % 2) front += c; else back += c;
@@ -983,11 +1084,12 @@
     { h: 1,    say: '앗, 입에서 새싹이 났어요!' },
     { h: 90,   say: '꽃이 피었어요 🌼' },
     { h: 250,  say: '어…? 멈추질 않아요?!', banner: '쑥쑥!', shake: 2 },
-    { h: 700,  say: '열기구를 지나쳐요 🎈' },
-    { h: 1250, say: '비행기보다 높이! ✈️' },
+    { h: 300,  say: '붉은 등롱 사이로 올라가요 🏮' },
+    { h: 700,  say: '날개 달린 비행선이 지나가요' },
+    { h: 1250, say: '하늘 등불이 함께 떠올라요' },
     { h: 1480, banner: '구름 속으로!', shake: 4, say: '앞이 하나도 안 보여요!' },
     { h: 1960, banner: '구름 돌파!', shake: 6, flash: 1, say: '구름 바다 위예요 ☁️' },
-    { h: 2600, say: '하늘이 점점 어두워져요…' },
+    { h: 2600, say: '노을이 지고… 유성이 쏟아져요 🌠' },
     { h: ATMO, banner: '대기권 돌파!!', shake: 14, flash: 1, ring: true, say: '지구 밖으로 나왔어요! 🌍' },
     { h: ATMO + 250, say: '인공위성 안녕! 🛰️' },
     { h: pass(1.0), banner: '달 통과!', shake: 3, say: '달이 휙 지나가요 🌙' },
