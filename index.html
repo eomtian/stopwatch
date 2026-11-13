@@ -6,7 +6,7 @@
 <title>서거름 스탑워치</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Jua&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #f1e8d2;
@@ -58,6 +58,21 @@
     padding: 24px 16px 48px;
   }
   .wrap { width: 100%; max-width: 440px; }
+
+  .title { text-align: center; margin: 0 0 16px; font-family: "Gowun Batang", serif; }
+  .title h1 {
+    display: inline-block; vertical-align: middle;
+    margin: 0 6px; font-size: clamp(24px, 7vw, 30px); font-weight: 700;
+    letter-spacing: .14em; color: #3d5a26;
+    text-shadow: 0 2px 0 #fff8e2, 0 3px 6px rgba(80, 60, 20, .15);
+  }
+  .title .sprig { width: 40px; height: 20px; vertical-align: middle; }
+  .title .sprig.flip { transform: scaleX(-1); }
+  .title p { margin: 6px 0 0; font-size: 13px; letter-spacing: .28em; color: #8a6d45; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .title h1 { color: #cfe3a8; text-shadow: none; }
+    :root:not([data-theme="light"]) .title p { color: #c4ab86; }
+  }
 
   /* ---------- 무대 ---------- */
   .stage {
@@ -163,6 +178,12 @@
   .mouth > * { opacity: 0; }
   .stage:not(.sprouted) .m-smile, .sprouted .m-o { opacity: 1; }
 
+  .sway { transform-box: view-box; transform-origin: 0 300px; animation: sway 3.6s ease-in-out infinite; }
+  .sway-1 { animation-delay: -1.2s; }
+  .sway-2 { animation-delay: -2.4s; }
+  @keyframes sway { 0%, 100% { transform: skewX(0deg); } 50% { transform: skewX(-7deg); } }
+  .rays { animation: rays 7s ease-in-out infinite; }
+  @keyframes rays { 0%, 100% { opacity: .7; } 50% { opacity: 1; } }
   .seed { animation: drift 12s linear infinite; }
   @keyframes drift {
     0% { transform: translate(-30px, 20px) rotate(0); opacity: 0; }
@@ -190,7 +211,7 @@
     box-shadow: 0 24px 40px -28px rgba(61, 42, 23, .55);
   }
   .time {
-    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-family: "Gowun Batang", ui-monospace, Consolas, serif;
     font-variant-numeric: tabular-nums;
     font-size: clamp(46px, 14vw, 66px);
     font-weight: 700;
@@ -200,6 +221,8 @@
   }
   .time { color: var(--ink); text-shadow: 0 2px 0 rgba(120, 85, 40, .12); }
   .time .ms { color: var(--dim); font-size: 0.55em; }
+  .time .d { display: inline-block; width: .62em; text-align: center; }
+  .time .c { display: inline-block; width: .3em; text-align: center; }
   .lap-now {
     text-align: center; color: var(--dim);
     font-family: ui-monospace, Consolas, monospace;
@@ -251,20 +274,30 @@
 </head>
 <body>
 <div class="wrap">
+  <header class="title">
+    <svg class="sprig" viewBox="0 0 40 20" aria-hidden="true"><path d="M2 14 C12 14 24 10 38 4" stroke="#6b8a3a" stroke-width="1.6" fill="none"/><path d="M12 13 q-2 -8 4 -10 q1 7 -4 10z M22 10 q0 -8 6 -9 q0 7 -6 9z M30 7 q2 -6 7 -6 q-2 6 -7 6z" fill="#7fa64a"/></svg>
+    <h1>서거름 스탑워치</h1>
+    <svg class="sprig flip" viewBox="0 0 40 20" aria-hidden="true"><path d="M2 14 C12 14 24 10 38 4" stroke="#6b8a3a" stroke-width="1.6" fill="none"/><path d="M12 13 q-2 -8 4 -10 q1 7 -4 10z M22 10 q0 -8 6 -9 q0 7 -6 9z M30 7 q2 -6 7 -6 q-2 6 -7 6z" fill="#7fa64a"/></svg>
+    <p>작은 똥 하나가 하늘까지 자라는 시간</p>
+  </header>
   <div class="stage idle" id="stage">
     <svg viewBox="0 0 400 300" aria-label="서거름의 입에서 자라 우주와 은하계까지 뻗는 나무">
       <defs>
         <linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="270" x2="0" y2="-3700">
-          <stop offset="0" stop-color="#eef6ee"/>
-          <stop offset=".04" stop-color="#c6e6f3"/>
-          <stop offset=".14" stop-color="#8fcbef"/>
-          <stop offset=".3" stop-color="#5eaae6"/>
+          <stop offset="0" stop-color="#fbf6dc"/>
+          <stop offset=".018" stop-color="#bfe4f4"/>
+          <stop offset=".06" stop-color="#77bdee"/>
+          <stop offset=".16" stop-color="#4c9ee6"/>
+          <stop offset=".3" stop-color="#3b8bdc"/>
           <stop offset=".48" stop-color="#3f88d6"/>
           <stop offset=".62" stop-color="#2d62b2"/>
           <stop offset=".78" stop-color="#1f3079"/>
           <stop offset=".9" stop-color="#14194b"/>
           <stop offset="1" stop-color="#080a18"/>
         </linearGradient>
+        <linearGradient id="hill1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a6d07a"/><stop offset=".35" stop-color="#7fb35a"/><stop offset="1" stop-color="#5d8f44"/></linearGradient>
+        <linearGradient id="hill2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fc45e"/><stop offset=".3" stop-color="#6aa346"/><stop offset="1" stop-color="#4a7d35"/></linearGradient>
+        <linearGradient id="hill3" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7cb74e"/><stop offset=".3" stop-color="#5a923d"/><stop offset="1" stop-color="#3e6c2e"/></linearGradient>
         <radialGradient id="sunGlow">
           <stop offset="0" stop-color="#fff6d6" stop-opacity=".9"/>
           <stop offset=".4" stop-color="#fff1c4" stop-opacity=".35"/>
@@ -300,6 +333,14 @@
       <g class="cam">
         <rect x="-60" y="-200000" width="520" height="200400" fill="url(#sky)"/>
         <circle cx="30" cy="10" r="260" fill="url(#sunGlow)"/>
+        <g class="rays" fill="#fff8dc">
+          <path d="M20 -10 L460 120 L460 170 Z" opacity=".16"/>
+          <path d="M20 -10 L420 260 L360 270 Z" opacity=".12"/>
+          <path d="M20 -10 L250 270 L210 270 Z" opacity=".1"/>
+          <path d="M20 -10 L460 30 L460 60 Z" opacity=".1"/>
+        </g>
+        <circle cx="30" cy="10" r="20" fill="#fffbe8"/>
+        <circle cx="30" cy="10" r="34" fill="#fff6d0" opacity=".5"/>
         <g id="decorBack"></g>
       </g>
 
@@ -319,26 +360,54 @@
 
       <!-- 앞쪽 월드: 땅, 서거름, 나무, 앞 구름 -->
       <g class="cam">
-        <!-- 지브리풍 초원 언덕 -->
-        <path d="M-60 236 C10 206 80 212 140 228 C200 244 250 204 320 208 C385 212 425 230 460 236 L460 420 L-60 420 Z" fill="#9cc788" stroke="#6f9a5c" stroke-width="1.2"/>
-        <g transform="translate(338 206)">
-          <rect x="-2" y="-4" width="4" height="12" rx="1.5" fill="#6b5236"/>
-          <circle cx="0" cy="-12" r="11" fill="#6d9e58"/><circle cx="-8" cy="-6" r="8" fill="#6d9e58"/><circle cx="8" cy="-6" r="8" fill="#6d9e58"/>
-          <circle cx="-3" cy="-16" r="5" fill="#8dbd70"/>
+        <!-- 먼 산맥 (공기 원근: 푸르스름하게) -->
+        <path d="M-60 222 L-10 196 L30 208 L80 178 L120 200 L170 186 L220 204 L262 180 L300 196 L350 172 L400 194 L460 186 L460 260 L-60 260 Z" fill="#a9c2d8"/>
+        <path d="M80 178 L96 190 L88 192 Z M262 180 L276 190 L268 191 Z M350 172 L366 184 L357 185 Z" fill="#e8f0f6"/>
+        <path d="M-60 232 C0 214 50 220 100 230 C150 240 190 214 250 216 C310 218 360 236 460 226 L460 270 L-60 270 Z" fill="#88ab8f"/>
+        <!-- 언덕 1 + 외딴 큰 나무 -->
+        <path d="M-60 240 C10 212 80 216 140 230 C200 244 250 208 320 211 C385 214 425 232 460 238 L460 420 L-60 420 Z" fill="url(#hill1)" stroke="#5f8a46" stroke-width="1.4"/>
+        <path d="M250 214 C290 210 320 211 360 216 C340 222 300 226 270 224 Z" fill="#c4e18f" opacity=".7"/>
+        <g transform="translate(330 212)">
+          <path d="M-2 0 q-1 -9 -1 -16 h6 q0 7 -1 16z" fill="#5d4128" stroke="#3d2a17" stroke-width="1"/>
+          <g fill="#4f8236" stroke="#2f5524" stroke-width="1.1">
+            <circle cx="0" cy="-26" r="14"/><circle cx="-12" cy="-18" r="10"/><circle cx="12" cy="-18" r="10"/><circle cx="0" cy="-36" r="9"/>
+          </g>
+          <g fill="#79ad4c"><circle cx="-3" cy="-29" r="10"/><circle cx="-13" cy="-21" r="6"/><circle cx="-2" cy="-38" r="6"/></g>
+          <circle cx="-6" cy="-33" r="4" fill="#b2d872"/>
         </g>
-        <path d="M-60 258 C60 246 140 262 220 255 C300 248 360 260 460 252 L460 420 L-60 420 Z" fill="#7db463" stroke="#5c8f47" stroke-width="1.2"/>
-        <path d="M-60 282 C80 272 200 290 320 279 C380 274 420 281 460 278 L460 420 L-60 420 Z" fill="#69a352" stroke="#4f8540" stroke-width="1.2"/>
+        <!-- 언덕 2, 3 -->
+        <path d="M-60 258 C60 245 140 262 220 254 C300 246 360 259 460 250 L460 420 L-60 420 Z" fill="url(#hill2)" stroke="#4f7f3a" stroke-width="1.4"/>
+        <path d="M-60 258 C20 250 60 252 100 255 C70 262 20 264 -60 266 Z" fill="#b6db7c" opacity=".6"/>
+        <path d="M-60 282 C80 271 200 290 320 278 C380 273 420 280 460 277 L460 420 L-60 420 Z" fill="url(#hill3)" stroke="#43733a" stroke-width="1.4"/>
+        <g id="bushes"></g>
         <g id="meadow"></g>
-        <ellipse cx="200" cy="257" rx="80" ry="9" fill="#2f4a22" opacity=".22"/>
+        <ellipse cx="200" cy="257" rx="84" ry="9" fill="#2a4a1e" opacity=".3"/>
 
         <g id="mascot" transform="translate(30 59)">
-          <ellipse class="arm arm-l" cx="102" cy="168" rx="26" ry="20" fill="url(#clayArm)" stroke="#6b4426" stroke-width="2.2" stroke-linejoin="round"/>
-          <ellipse class="arm arm-r" cx="238" cy="168" rx="26" ry="20" fill="url(#clayArm)" stroke="#6b4426" stroke-width="2.2" stroke-linejoin="round"/>
-          <path d="M170 52 c10 0 16 -10 13 -22 c12 6 16 20 10 30 c44 10 70 46 70 86 c0 36 -40 52 -93 52 s-93 -16 -93 -52 c0 -50 40 -94 93 -94 z" fill="url(#clay)" stroke="#6b4426" stroke-width="2.2" stroke-linejoin="round"/>
-          <path d="M118 96 q10 -10 22 -12" stroke="#fff" stroke-opacity=".18" stroke-width="5" fill="none" stroke-linecap="round"/>
-          <path d="M226 160 q14 -6 22 -20" stroke="#000" stroke-opacity=".08" stroke-width="4" fill="none" stroke-linecap="round"/>
-          <ellipse class="arm arm-l" cx="102" cy="170" rx="22" ry="16" fill="url(#clayArm)" stroke="#6b4426" stroke-width="2.2" stroke-linejoin="round"/>
-          <ellipse class="arm arm-r" cx="238" cy="170" rx="22" ry="16" fill="url(#clayArm)" stroke="#6b4426" stroke-width="2.2" stroke-linejoin="round"/>
+          <defs>
+            <path id="bodyShape" d="M170 52 c10 0 16 -10 13 -22 c12 6 16 20 10 30 c44 10 70 46 70 86 c0 36 -40 52 -93 52 s-93 -16 -93 -52 c0 -50 40 -94 93 -94 z"/>
+            <clipPath id="bodyClip"><use href="#bodyShape"/></clipPath>
+          </defs>
+          <!-- 셀 셰이딩: 그림자색 위에 밝은 면을 비켜 얹어 경계가 또렷한 음영 -->
+          <use href="#bodyShape" fill="#7a4d2b"/>
+          <g clip-path="url(#bodyClip)">
+            <use href="#bodyShape" fill="#a9703f" transform="translate(-16 -12)"/>
+            <path d="M84 120 C100 70 150 52 200 60 C160 64 118 84 100 128 Z" fill="#c28a55"/>
+            <ellipse cx="126" cy="86" rx="20" ry="8" transform="rotate(-32 126 86)" fill="#e2b07c"/>
+            <ellipse cx="152" cy="68" rx="6" ry="3" transform="rotate(-20 152 68)" fill="#f3d1a0"/>
+            <path d="M190 176 q30 -4 52 -26" stroke="#5f3a1f" stroke-width="3" fill="none" stroke-linecap="round" opacity=".45"/>
+          </g>
+          <use href="#bodyShape" fill="none" stroke="#3f2614" stroke-width="2.6" stroke-linejoin="round"/>
+          <g class="arm arm-l">
+            <ellipse cx="102" cy="170" rx="22" ry="16" fill="#7a4d2b" stroke="#3f2614" stroke-width="2.4"/>
+            <ellipse cx="98" cy="166" rx="17" ry="11" fill="#a9703f"/>
+            <ellipse cx="92" cy="162" rx="6" ry="3" fill="#e2b07c"/>
+          </g>
+          <g class="arm arm-r">
+            <ellipse cx="238" cy="170" rx="22" ry="16" fill="#7a4d2b" stroke="#3f2614" stroke-width="2.4"/>
+            <ellipse cx="234" cy="166" rx="17" ry="11" fill="#a9703f"/>
+            <ellipse cx="228" cy="162" rx="6" ry="3" fill="#e2b07c"/>
+          </g>
           <ellipse cx="124" cy="140" rx="15" ry="9" fill="#e9826d" opacity=".45"/>
           <ellipse cx="218" cy="140" rx="15" ry="9" fill="#e9826d" opacity=".45"/>
           <g class="eyes">
@@ -422,7 +491,9 @@
     const h = Math.floor(ms / 3600000);
     const p = n => String(n).padStart(2, '0');
     const main = (h ? h + ':' : '') + p(m) + ':' + p(s);
-    return html ? `${main}<span class="ms">.${p(cs)}</span>` : `${main}.${p(cs)}`;
+    // 세리프 숫자는 폭이 제각각이라, 한 글자씩 고정폭 칸에 넣어 흔들리지 않게 함
+    const cells = str => [...str].map(c => `<span class="${c === ':' || c === '.' ? 'c' : 'd'}">${c}</span>`).join('');
+    return html ? `${cells(main)}<span class="ms">${cells('.' + p(cs))}</span>` : `${main}.${p(cs)}`;
   }
 
   /* ---------- 성장 곡선 ----------
@@ -505,34 +576,48 @@
     `<ellipse cx="${x + dx}" cy="${y + dy}" rx="${rx * s}" ry="${ry * s}"/>`).join('');
   const cloud = (x, y, k, o = 1) =>
     `<g opacity="${o}" transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${k.toFixed(2)})">
-      <g fill="#b7cbe6">${puffs(0, 5, 1)}</g>
-      <g fill="#fbfdff">${puffs(0, 0, .97)}</g>
-      <g fill="#fffbe9" opacity=".9">${puffs(-5, -5, .55)}</g></g>`;
+      <g fill="#9bb4dc">${puffs(0, 0, 1)}</g>
+      <g fill="#dde7f6">${puffs(-3, -5, .93)}</g>
+      <g fill="#ffffff">${puffs(-6, -9, .8)}</g>
+      <g fill="#fffaf0" opacity=".75">${puffs(-9, -12, .6)}</g></g>`;
 
   /* ---------- 대기권 안쪽 장식 (월드 좌표) ---------- */
   (function buildDecor() {
     const r = rng(7);
     let back = '', front = '';
     // 지평선 위로 솟은 커다란 적란운
-    back += cloud(310, 214, 2.3) + cloud(340, 170, 1.7) + cloud(300, 136, 1.2) + cloud(330, 112, .8);
-    back += cloud(40, 222, 1.8) + cloud(64, 190, 1.1);
-    back += cloud(170, 70, .7, .85);
+    back += cloud(300, 226, 2.8) + cloud(350, 196, 2.2) + cloud(290, 166, 1.9) + cloud(334, 128, 1.6) + cloud(304, 92, 1.3) + cloud(330, 62, .9);
+    back += cloud(30, 230, 2.2) + cloud(58, 196, 1.4) + cloud(26, 174, .9);
+    back += cloud(160, 60, .75, .9) + cloud(205, 36, .5, .8);
 
-    // 풀숲, 들꽃
-    let meadow = '', grass = '';
-    const tuft = (x, y, s, c) => `<path d="M${x} ${y} q-3 -${8 * s} -7 -${12 * s} M${x} ${y} q0 -${10 * s} 1 -${15 * s} M${x} ${y} q3 -${7 * s} 7 -${11 * s}" stroke="${c}" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
-    for (let i = 0; i < 26; i++) {
-      const x = -20 + r() * 440, y = 262 + r() * 36;
-      if (Math.abs(x - 200) < 90 && y < 270) continue;
-      meadow += tuft(x.toFixed(0), y.toFixed(0), .8 + r() * .5, r() < .5 ? '#4f8a3c' : '#5f9a48');
+    // 바람에 흔들리는 풀 (세 무리로 나눠 물결치듯)
+    const blade = (x, y, hgt, lean, c) =>
+      `<path d="M${(x - 1.6).toFixed(1)} ${y} Q${(x + lean * .4).toFixed(1)} ${(y - hgt * .6).toFixed(1)} ${(x + lean).toFixed(1)} ${(y - hgt).toFixed(1)} Q${(x + lean * .4 + 1.4).toFixed(1)} ${(y - hgt * .55).toFixed(1)} ${(x + 1.6).toFixed(1)} ${y}Z" fill="${c}"/>`;
+    const greens = ['#4d8a34', '#5f9c3e', '#6fae47', '#87c25a', '#3f7a2c'];
+    const groups = ['', '', ''];
+    for (let i = 0; i < 150; i++) {
+      const x = -30 + r() * 460, y = 262 + r() * 40;
+      if (Math.abs(x - 200) < 70 && y < 268) continue;
+      groups[i % 3] += blade(x, y.toFixed(1), 8 + r() * 14, 4 + r() * 7, greens[Math.floor(r() * greens.length)]);
     }
-    for (let i = 0; i < 16; i++) {
-      const x = -10 + r() * 420, y = 262 + r() * 34, c = ['#fff8e8', '#ffe27a', '#f6b6c8', '#c9b8f0'][i % 4];
-      meadow += `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)})">${[0, 72, 144, 216, 288].map(a => `<circle cx="0" cy="-2.2" r="1.6" fill="${c}" transform="rotate(${a})"/>`).join('')}<circle r="1.1" fill="#f2b33a"/></g>`;
+    let meadow = groups.map((g, i) => `<g class="sway sway-${i}">${g}</g>`).join('');
+    for (let i = 0; i < 22; i++) {
+      const x = -10 + r() * 420, y = 262 + r() * 34, c = ['#fffaf0', '#ffe27a', '#f7b9cb', '#c9b8f0', '#fffaf0'][i % 5];
+      meadow += `<g transform="translate(${x.toFixed(0)} ${y.toFixed(0)})"><path d="M0 0 q1 5 0 9" stroke="#4d8a34" stroke-width="1"/>${[0, 72, 144, 216, 288].map(a => `<ellipse cx="0" cy="-2.4" rx="1.4" ry="2" fill="${c}" stroke="#a08868" stroke-width=".3" transform="rotate(${a})"/>`).join('')}<circle r="1.2" fill="#f0a830"/></g>`;
     }
-    for (let x = 118; x < 290; x += 14 + r() * 10) grass += tuft(x.toFixed(0), (259 + r() * 4).toFixed(0), .7 + r() * .4, '#5a9444');
     $('meadow').innerHTML = meadow;
-    $('grassFront').innerHTML = grass;
+
+    // 서거름 발치 앞풀
+    let grass = '';
+    for (let x = 112; x < 292; x += 5 + r() * 6) grass += blade(x, (260 + r() * 5).toFixed(1), 7 + r() * 9, 3 + r() * 5, greens[Math.floor(r() * 4)]);
+    $('grassFront').innerHTML = `<g class="sway sway-1">${grass}</g>`;
+
+    // 언덕 위 덤불 (셀 셰이딩)
+    const bush = (x, y, k) => `<g transform="translate(${x} ${y}) scale(${k})">
+      <g fill="#3f7a2c" stroke="#2c5520" stroke-width="1.2"><circle cx="0" cy="0" r="10"/><circle cx="-10" cy="4" r="7"/><circle cx="10" cy="4" r="7"/></g>
+      <g fill="#6aa846"><circle cx="-2" cy="-3" r="7"/><circle cx="-11" cy="2" r="4"/></g>
+      <circle cx="-4" cy="-6" r="3" fill="#a9d36a"/></g>`;
+    $('bushes').innerHTML = bush(30, 244, 1.2) + bush(70, 250, .9) + bush(388, 250, 1.3) + bush(360, 256, .8) + bush(150, 236, .7);
 
     // 바람에 날리는 민들레 씨앗
     let fluff = '';
@@ -729,7 +814,7 @@
     const topY = yAt(h);
     const viewTop = -camY - 140, viewBot = 300 - camY + 140;
     const woody = (h - 140) / 260;
-    const trunkCol = mix('6f9a3f', '7a5230', woody);
+    const trunkCol = mix('7cb247', '93643a', woody);
     const baseW = Math.min(16, 2.5 + Math.sqrt(h) * 0.55);
     const wind = Math.sin(tSec * 1.6) * 1.5;
     const width = y => Math.max(2.4, baseW * (1 - (BASE_Y - y) / h * 0.6)) / 2;
@@ -750,21 +835,21 @@
       const x1 = x0 + b.side * L * Math.cos(b.ang), y1 = y0 - L * Math.sin(b.ang);
       const bw = Math.max(1.5, Math.min(6, width(y0) * 0.8));
       s += `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} Q${((x0 + x1) / 2).toFixed(1)} ${(y0 - L * .15).toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}" stroke="${trunkCol}" stroke-width="${bw.toFixed(1)}" fill="none" stroke-linecap="round"/>`;
-      const lr = Math.min(26, 6 + L * 0.3);
-      const dark = mix('5c9140', '3f7a35', b.hue), mid = mix('7fb34c', '62a046', b.hue);
+      const lr = Math.min(30, 7 + L * 0.34);
+      const dark = mix('3f7a2c', '2f6a2a', b.hue), mid = mix('6aa846', '5a9a3e', b.hue), lite = mix('a6d36a', '9ccc5e', b.hue);
       const cx = (x1 + wind).toFixed(1), cy = y1.toFixed(1);
-      const clump = (s, dx, dy) => `<circle r="${(lr * s).toFixed(1)}"/><circle cx="${(-lr * .6 * s + dx).toFixed(1)}" cy="${(lr * .3 * s + dy).toFixed(1)}" r="${(lr * .68 * s).toFixed(1)}"/><circle cx="${(lr * .58 * s + dx).toFixed(1)}" cy="${(lr * .28 * s + dy).toFixed(1)}" r="${(lr * .62 * s).toFixed(1)}"/>`;
+      const clump = (k, dx, dy) => `<circle cx="${dx.toFixed(1)}" cy="${dy.toFixed(1)}" r="${(lr * k).toFixed(1)}"/><circle cx="${(-lr * .62 * k + dx).toFixed(1)}" cy="${(lr * .32 * k + dy).toFixed(1)}" r="${(lr * .7 * k).toFixed(1)}"/><circle cx="${(lr * .6 * k + dx).toFixed(1)}" cy="${(lr * .3 * k + dy).toFixed(1)}" r="${(lr * .64 * k).toFixed(1)}"/><circle cx="${(-lr * .1 * k + dx).toFixed(1)}" cy="${(-lr * .55 * k + dy).toFixed(1)}" r="${(lr * .55 * k).toFixed(1)}"/>`;
       s += `<g transform="translate(${cx} ${cy})">
-        <g fill="${dark}" stroke="#36602a" stroke-width="1.3">${clump(1, 0, 0)}</g>
-        <g fill="${dark}">${clump(.96, 0, 0)}</g>
-        <g fill="${mid}">${clump(.7, -lr * .12, -lr * .18)}</g>
-        <circle cx="${(-lr * .3).toFixed(1)}" cy="${(-lr * .42).toFixed(1)}" r="${(lr * .3).toFixed(1)}" fill="#b9da7a" opacity=".85"/>
-        <circle cx="${(lr * .25).toFixed(1)}" cy="${(-lr * .3).toFixed(1)}" r="${(lr * .14).toFixed(1)}" fill="#d6ea9a" opacity=".8"/></g>`;
+        <g fill="${dark}" stroke="#244a1a" stroke-width="1.4">${clump(1, 0, 0)}</g>
+        <g fill="${dark}">${clump(.97, 0, 0)}</g>
+        <g fill="${mid}">${clump(.78, -lr * .14, -lr * .2)}</g>
+        <g fill="${lite}">${clump(.4, -lr * .3, -lr * .42)}</g>
+        <path d="M${(lr * .2).toFixed(1)} ${(-lr * .05).toFixed(1)} q3 -3 6 0 M${(-lr * .5).toFixed(1)} ${(lr * .25).toFixed(1)} q3 -3 6 0 M${(lr * .45).toFixed(1)} ${(lr * .35).toFixed(1)} q3 -3 6 0" stroke="${dark}" stroke-width="1.2" fill="none" stroke-linecap="round"/></g>`;
     }
 
     const yFrom = Math.min(BASE_Y, viewBot), yTo = Math.max(topY, viewTop);
     if (yFrom > yTo) {
-      const left = [], right = [];
+      const left = [], right = [], litR = [];
       const steps = Math.max(2, Math.ceil((yFrom - yTo) / 10));
       for (let i = 0; i <= steps; i++) {
         const y = yFrom - (yFrom - yTo) * i / steps;
@@ -773,8 +858,10 @@
         const w = width(y);
         left.push(`${(x - w).toFixed(1)} ${y.toFixed(1)}`);
         right.unshift(`${(x + w).toFixed(1)} ${y.toFixed(1)}`);
+        litR.unshift(`${(x + w * .15).toFixed(1)} ${y.toFixed(1)}`);
       }
-      s += `<path d="M${left.join(' L')} L${right.join(' L')} Z" fill="${trunkCol}" stroke="${mix('4f7a2e', '4a301b', woody)}" stroke-width="1.2" stroke-linejoin="round"/>`;
+      s += `<path d="M${left.join(' L')} L${right.join(' L')} Z" fill="${mix('4d7d2b', '5a3820', woody)}" stroke="${mix('35601f', '3a2412', woody)}" stroke-width="1.4" stroke-linejoin="round"/>`;
+      s += `<path d="M${left.join(' L')} L${litR.join(' L')} Z" fill="${trunkCol}"/>`;
       if (woody > 0.3) {
         const startY = Math.floor(yFrom / 46) * 46;
         for (let y = startY; y > Math.max(yTo, topY + 60); y -= 46) {
