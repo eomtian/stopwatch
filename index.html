@@ -54,7 +54,7 @@
     overflow: hidden;
     border: 1px solid var(--line);
     border-bottom: none;
-    background: #0d1330;
+    background: #05070f;
   }
   .stage svg, .stage canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
   .stage canvas { pointer-events: none; }
@@ -62,6 +62,7 @@
   .whiteout, .flash { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
   .whiteout { background: #f4f7fa; }
   .flash { background: radial-gradient(circle at 50% 30%, #fff 0 30%, #fff7d6 60%, #ffd27a 100%); }
+  .flash.violet { background: radial-gradient(circle at 50% 40%, #fff 0 25%, #f1dcff 55%, #9c7bff 100%); }
   .flash.on { animation: flash .9s ease-out; }
   @keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
 
@@ -76,7 +77,7 @@
     pointer-events: none;
     opacity: 0;
   }
-  .banner.on { animation: banner 1.6s cubic-bezier(.2,1.4,.4,1) forwards; }
+  .banner.on { animation: banner 1.4s cubic-bezier(.2,1.4,.4,1) forwards; }
   @keyframes banner {
     0% { opacity: 0; transform: scale(2.2); }
     15% { opacity: 1; transform: scale(1); }
@@ -195,9 +196,8 @@
 <body>
 <div class="wrap">
   <div class="stage idle" id="stage">
-    <svg viewBox="0 0 400 300" aria-label="서거름의 입에서 자라 우주까지 뻗는 나무">
+    <svg viewBox="0 0 400 300" aria-label="서거름의 입에서 자라 우주와 은하계까지 뻗는 나무">
       <defs>
-        <!-- 고도별 하늘: 땅(270) → 구름층 → 대기권 끝(-3395) → 우주 -->
         <linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="270" x2="0" y2="-3700">
           <stop offset="0" stop-color="#f6ecd8"/>
           <stop offset=".08" stop-color="#d6ebf3"/>
@@ -223,6 +223,15 @@
           <stop offset="1" stop-color="#123a7a"/>
         </radialGradient>
         <clipPath id="earthClip"><circle id="earthClipCircle" cx="200" cy="1500" r="1200"/></clipPath>
+        <radialGradient id="shade" cx="35%" cy="30%" r="75%">
+          <stop offset="0" stop-color="#fff" stop-opacity=".25"/>
+          <stop offset=".6" stop-color="#000" stop-opacity="0"/>
+          <stop offset="1" stop-color="#000" stop-opacity=".45"/>
+        </radialGradient>
+        <radialGradient id="neb1"><stop offset="0" stop-color="#b56cff" stop-opacity=".55"/><stop offset="1" stop-color="#b56cff" stop-opacity="0"/></radialGradient>
+        <radialGradient id="neb2"><stop offset="0" stop-color="#ff6fae" stop-opacity=".45"/><stop offset="1" stop-color="#ff6fae" stop-opacity="0"/></radialGradient>
+        <radialGradient id="neb3"><stop offset="0" stop-color="#5fb6ff" stop-opacity=".5"/><stop offset="1" stop-color="#5fb6ff" stop-opacity="0"/></radialGradient>
+        <radialGradient id="core"><stop offset="0" stop-color="#fff8e0"/><stop offset=".35" stop-color="#ffd98a" stop-opacity=".85"/><stop offset="1" stop-color="#ff9f5a" stop-opacity="0"/></radialGradient>
       </defs>
 
       <!-- 뒤쪽 월드: 하늘, 장식 -->
@@ -231,7 +240,14 @@
         <g id="decorBack"></g>
       </g>
 
-      <!-- 화면 고정: 우주에서 내려다본 지구 -->
+      <!-- 우주 배경 (화면 고정 + 시차 스크롤) -->
+      <rect id="spaceTint" x="-10" y="-10" width="420" height="320" fill="#2a1450" opacity="0"/>
+      <g id="stars"></g>
+      <g id="nebula"></g>
+      <g id="galaxyView" opacity="0"><g id="galaxyInner"></g></g>
+      <g id="planets"></g>
+
+      <!-- 우주에서 내려다본 지구 -->
       <g id="earth" opacity="0">
         <circle id="earthGlow" cx="200" cy="1500" r="1216" fill="#7fc4ff" opacity=".35"/>
         <circle id="earthBody" cx="200" cy="1500" r="1200" fill="url(#earthSea)"/>
@@ -310,7 +326,9 @@
   const $time = $('time'), $lapNow = $('lapNow'), $toggle = $('toggle'), $lap = $('lap'),
         $laps = $('laps'), $stage = $('stage'), $bubble = $('bubble'), $height = $('height'),
         $tree = $('tree'), $lip = $('lip'), $banner = $('banner'), $flash = $('flash'),
-        $whiteout = $('whiteout'), $earth = $('earth'), $ring = $('ring'), $fx = $('fx');
+        $whiteout = $('whiteout'), $earth = $('earth'), $ring = $('ring'), $fx = $('fx'),
+        $stars = $('stars'), $planets = $('planets'), $nebula = $('nebula'),
+        $galaxyView = $('galaxyView'), $galaxyInner = $('galaxyInner'), $spaceTint = $('spaceTint');
   const cams = document.querySelectorAll('.cam');
 
   /* ---------- 스탑워치 상태 ---------- */
@@ -327,45 +345,65 @@
     return html ? `${main}<span class="ms">.${p(cs)}</span>` : `${main}.${p(cs)}`;
   }
 
-  /* ---------- 성장 곡선 ---------- */
-  const BASE_X = 201, BASE_Y = 205;      // 서거름의 입 (월드 좌표)
-  const ATMO = 3600;                     // 대기권 끝 (px)
-  const LAUNCH = 10;                     // 이 시간(초)에 대기권 돌파
-  const POW = 2.2;
-  const V_END = ATMO * POW / LAUNCH;     // 돌파 순간 속도 (px/s)
-  const TAU = 0.7;
+  /* ---------- 성장 곡선 ----------
+     0~10초  : 점점 가속하며 땅 → 하늘 → 구름 → 대기권 돌파
+     10~20초 : 더 빨라지며 달 → 화성 → 목성 → 토성 → 천왕성 → 해왕성 → 은하수 → 은하계 돌파
+     20초~   : 관성으로 감속, 이후 우주에서 천천히 계속 자람 (1시간에 안드로메다) */
+  const BASE_X = 201, BASE_Y = 205;
+  const ATMO = 3600, LAUNCH = 10, POW = 2.2, TAU = 0.7;
+  const V_END = ATMO * POW / LAUNCH;   // 대기권 돌파 속도 ≈ 792 px/s
+  const ACC = 30;                      // 우주 구간 가속도
+  const H20 = ATMO + V_END * 10 + ACC * 100;
+  const V20 = V_END + 2 * ACC * 10;
 
-  // 0~10초: 점점 가속해서 대기권 돌파 → 이후 관성으로 감속하며 우주에서 천천히 자람
   function growth(ms) {
     const t = ms / 1000;
     if (t <= LAUNCH) return ATMO * Math.pow(t / LAUNCH, POW);
-    const d = t - LAUNCH;
-    return ATMO + V_END * TAU * (1 - Math.exp(-d / TAU)) + 40 * Math.sqrt(d);
+    if (t <= 20) { const d = t - LAUNCH; return ATMO + V_END * d + ACC * d * d; }
+    const e = t - 20;
+    return H20 + V20 * TAU * (1 - Math.exp(-e / TAU)) + 40 * Math.sqrt(e);
   }
-  const MOON_H = growth(3600 * 1000);    // 1시간이면 달에 닿음
+  const hAt = d => growth((LAUNCH + d) * 1000);   // 대기권 돌파 d초 후 높이
+  const FAR_H = growth(3600 * 1000);
+  const yAt = h => BASE_Y - h;
+  const camFor = h => h - 115;                     // 이 높이일 때 카메라 위치
 
-  // 화면에 보여줄 실제 고도(m)
-  const ALT = [[0, 0], [250, 8], [700, 300], [1300, 2000], [1500, 3000], [1900, 7000],
-               [2600, 20000], [ATMO, 100000], [ATMO + 600, 400000], [ATMO + 1300, 36000000],
-               [MOON_H, 384400000]];
-  function altitude(h) {
-    for (let i = 1; i < ALT.length; i++) {
-      if (h <= ALT[i][0]) {
-        const [h0, a0] = ALT[i - 1], [h1, a1] = ALT[i];
-        return a0 + (a1 - a0) * (h - h0) / (h1 - h0);
+  /* ---------- 고도 표시 ---------- */
+  const LY = 9.461e12;   // 1광년(km)
+  const AU = 1.496e8;
+  const ALT_M = [[0, 0], [250, 8], [700, 300], [1300, 2000], [1500, 3000], [1900, 7000], [2600, 20000], [ATMO, 100000]];
+  const ALT_KM = [                      // 대기권 밖은 로그 보간 (km)
+    [ATMO, 100], [ATMO + 250, 400], [hAt(1.0), 384400], [hAt(2.3), 7.8e7], [hAt(3.8), 6.3e8],
+    [hAt(5.3), 1.28e9], [hAt(6.6), 2.7e9], [hAt(7.3), 4.4e9], [hAt(8.0), 1.8e10],
+    [hAt(8.6), 4.2 * LY], [hAt(9.4), 2000 * LY], [H20, 100000 * LY], [FAR_H, 2.5e6 * LY],
+  ];
+  function lerpTable(tab, h, log) {
+    if (h <= tab[0][0]) return tab[0][1];
+    for (let i = 1; i < tab.length; i++) {
+      if (h <= tab[i][0]) {
+        const [h0, a0] = tab[i - 1], [h1, a1] = tab[i], f = (h - h0) / (h1 - h0);
+        return log ? Math.exp(Math.log(a0) + (Math.log(a1) - Math.log(a0)) * f) : a0 + (a1 - a0) * f;
       }
     }
-    return ALT[ALT.length - 1][1];
+    return tab[tab.length - 1][1];
+  }
+  function distText(h) {
+    if (h < ATMO) {
+      const m = lerpTable(ALT_M, h);
+      return m < 1000 ? `${m.toFixed(m < 10 ? 1 : 0)}m` : `${Math.round(m / 1000).toLocaleString()}km`;
+    }
+    const km = lerpTable(ALT_KM, h, true);
+    if (km < 1e8) return `${Math.round(km).toLocaleString()}km`;
+    if (km < 0.5 * LY) { const au = km / AU; return `${au < 10 ? au.toFixed(1) : Math.round(au).toLocaleString()}AU`; }
+    const ly = km / LY;
+    return `${ly < 10 ? ly.toFixed(1) : Math.round(ly).toLocaleString()}광년`;
   }
   function altLabel(h) {
-    const m = altitude(h);
-    const icon = h < 250 ? '🌱' : h < ATMO ? '🌳' : '🚀';
-    if (m < 1000) return `${icon} ${m.toFixed(m < 10 ? 1 : 0)}m`;
-    return `${icon} ${Math.round(m / 1000).toLocaleString()}km`;
+    const icon = h < 250 ? '🌱' : h < ATMO ? '🌳' : h < hAt(8.0) ? '🚀' : '🌌';
+    return `${icon} ${distText(h)}`;
   }
-  const yAt = h => BASE_Y - h;           // 높이 → 월드 y
 
-  /* ---------- 장식 ---------- */
+  /* ---------- 유틸 ---------- */
   function rng(seed) {
     return () => {
       seed |= 0; seed = seed + 0x6D2B79F5 | 0;
@@ -374,15 +412,22 @@
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
   }
+  const clamp01 = x => Math.max(0, Math.min(1, x));
+  const bump = (x, a, b, fade) => clamp01((x - a) / fade) * clamp01((b - x) / fade);
+  const mix = (a, b, t) => {
+    t = clamp01(t);
+    const pa = a.match(/\w\w/g).map(x => parseInt(x, 16)), pb = b.match(/\w\w/g).map(x => parseInt(x, 16));
+    return '#' + pa.map((v, i) => Math.round(v + (pb[i] - v) * t).toString(16).padStart(2, '0')).join('');
+  };
   const cloud = (x, y, k, o = 1, fill = '#fff') =>
     `<g opacity="${o}" transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${k.toFixed(2)})" fill="${fill}">
       <ellipse cx="0" cy="0" rx="40" ry="15"/><ellipse cx="-18" cy="-9" rx="18" ry="14"/>
       <ellipse cx="14" cy="-13" rx="23" ry="18"/><ellipse cx="32" cy="-2" rx="16" ry="11"/></g>`;
 
+  /* ---------- 대기권 안쪽 장식 (월드 좌표) ---------- */
   (function buildDecor() {
     const r = rng(7);
     let back = '', front = '';
-    // 낮은 하늘: 새, 열기구
     for (let i = 0; i < 8; i++) {
       const x = 20 + r() * 340, y = yAt(260 + r() * 500);
       back += `<path d="M${x} ${y} q5 -5 10 0 q5 -5 10 0" stroke="#5b6b7a" stroke-width="2" fill="none" stroke-linecap="round"/>`;
@@ -391,37 +436,23 @@
       <path d="M0 -30 c-26 0 -30 30 -10 46 l6 10 h8 l6 -10 c20 -16 16 -46 -10 -46z" fill="#ef7a5a"/>
       <path d="M0 -30 c-8 0 -10 30 -4 46 h8 c6 -16 4 -46 -4 -46z" fill="#f6c453"/>
       <rect x="-5" y="30" width="10" height="8" rx="2" fill="#8a5a2b"/></g>`;
-    // 흩어진 구름
     for (let i = 0; i < 6; i++) back += cloud(20 + r() * 340, yAt(400 + r() * 900), .6 + r() * .5, .9);
-    // 비행기
     back += `<g transform="translate(300 ${yAt(1320)})" fill="#e8eef4">
       <rect x="-26" y="-4" width="52" height="8" rx="4"/>
       <path d="M-4 0 l-12 -18 h6 l18 18z M-4 0 l-12 18 h6 l18 -18z" fill="#c9d4de"/>
       <path d="M-26 0 l-6 -10 h5 l7 10z" fill="#c9d4de"/>
       <path d="M26 2 h80" stroke="#fff" stroke-width="2" opacity=".7"/></g>`;
-    // 두꺼운 구름층 (나무가 뚫고 지나감)
     for (let i = 0; i < 34; i++) {
       const c = cloud(-30 + r() * 440, yAt(1480 + r() * 440), 1.2 + r() * 1.4, .95, i % 3 ? '#fff' : '#eef3f8');
       if (i % 2) front += c; else back += c;
     }
-    // 구름 바다 (위에서 내려다보는 구름 꼭대기)
     for (let i = 0; i < 12; i++) back += cloud(-40 + i * 40, yAt(1960 + r() * 30), 1.6, 1, '#f3f6fa');
-    // 별
-    for (let i = 0; i < 520; i++) {
-      const h = 2300 + Math.pow(r(), .8) * (MOON_H + 600 - 2300);
-      const a = Math.min(1, (h - 2300) / 900);
-      back += `<circle cx="${(r() * 400).toFixed(1)}" cy="${yAt(h).toFixed(0)}" r="${(r() * 1.3 + .4).toFixed(2)}" fill="#fff" opacity="${(a * (.4 + r() * .6)).toFixed(2)}"/>`;
-    }
     // 인공위성
-    back += `<g transform="translate(300 ${yAt(4400)}) rotate(-20)">
+    back += `<g transform="translate(305 ${yAt(ATMO + 250)}) rotate(-20)">
       <rect x="-8" y="-6" width="16" height="12" rx="2" fill="#d9dde3"/>
       <rect x="-40" y="-4" width="28" height="8" fill="#3d6fb8"/><rect x="12" y="-4" width="28" height="8" fill="#3d6fb8"/>
       <path d="M-26 -4 v8 M26 -4 v8" stroke="#9fc0ea" stroke-width="1"/>
       <circle cx="0" cy="-10" r="3" fill="#e2574c"/></g>`;
-    // 달
-    back += `<g transform="translate(300 ${yAt(MOON_H) + 30})">
-      <circle r="70" fill="#f1ecdc"/><circle cx="-22" cy="-14" r="13" fill="#ddd5bd"/>
-      <circle cx="24" cy="18" r="9" fill="#ddd5bd"/><circle cx="12" cy="-30" r="6" fill="#ddd5bd"/></g>`;
     $('decorBack').innerHTML = back;
     $('decorFront').innerHTML = front;
 
@@ -439,23 +470,140 @@
     $('earthLand').innerHTML = `<g id="earthLandInner">${land}</g>`;
   })();
 
+  /* ---------- 별 (화면 고정, 무한 스크롤) ---------- */
+  const STAR_N = 230;
+  const stars = (() => {
+    const r = rng(11), list = [];
+    const NS = 'http://www.w3.org/2000/svg';
+    for (let i = 0; i < STAR_N; i++) {
+      const el = document.createElementNS(NS, 'circle');
+      const galaxyOnly = i >= 110;
+      const hue = r();
+      const color = galaxyOnly ? (hue < .33 ? '#ffd6f2' : hue < .66 ? '#cfe3ff' : '#fff3c9') : '#ffffff';
+      el.setAttribute('cx', (r() * 400).toFixed(1));
+      el.setAttribute('r', ((galaxyOnly ? .5 : .4) + r() * 1.3).toFixed(2));
+      el.setAttribute('fill', color);
+      $stars.appendChild(el);
+      list.push({ el, y: r() * 340, z: .03 + r() * .3, a: .4 + r() * .6, galaxyOnly, tw: r() * 6 });
+    }
+    return list;
+  })();
+  function drawStars(camY, alt, gal, tSec) {
+    const base = clamp01((alt - 2300) / 900);
+    for (const s of stars) {
+      const vis = s.galaxyOnly ? gal : base;
+      if (vis <= 0.01) { s.el.setAttribute('opacity', 0); continue; }
+      const y = ((s.y + camY * s.z) % 340 + 340) % 340 - 20;
+      s.el.setAttribute('cy', y.toFixed(1));
+      const twinkle = .75 + .25 * Math.sin(tSec * 2 + s.tw);
+      s.el.setAttribute('opacity', (vis * s.a * twinkle).toFixed(2));
+    }
+  }
+
+  /* ---------- 행성 (시차 레이어) ---------- */
+  const P_PAR = 0.4;   // 행성은 멀리 있어서 나무보다 천천히 지나감
+  const planetAt = d => 150 - camFor(hAt(d)) * P_PAR;   // 이 d초에 화면 가운데 오도록
+  function planetSVG(id, x, y, r, base, extra = '') {
+    return `<g transform="translate(${x} ${y.toFixed(1)})">
+      <clipPath id="clip-${id}"><circle r="${r}"/></clipPath>
+      <circle r="${r + 4}" fill="${base}" opacity=".18"/>
+      <circle r="${r}" fill="${base}"/>
+      <g clip-path="url(#clip-${id})">${extra}</g>
+      <circle r="${r}" fill="url(#shade)"/></g>`;
+  }
+  (function buildPlanets() {
+    let s = '';
+    // 달
+    s += planetSVG('moon', 300, planetAt(1.0), 46, '#d9d4c4',
+      `<circle cx="-14" cy="-10" r="10" fill="#bfb8a4"/><circle cx="16" cy="12" r="7" fill="#bfb8a4"/>
+       <circle cx="6" cy="-24" r="5" fill="#bfb8a4"/><circle cx="-20" cy="20" r="6" fill="#c8c1ad"/>`);
+    // 화성
+    s += planetSVG('mars', 95, planetAt(2.3), 42, '#c8562e',
+      `<ellipse cx="-10" cy="6" rx="22" ry="8" fill="#9e3b1c" opacity=".7"/>
+       <ellipse cx="14" cy="-12" rx="14" ry="6" fill="#a8441f" opacity=".6"/>
+       <ellipse cx="0" cy="-40" rx="18" ry="6" fill="#fff" opacity=".85"/>`);
+    // 목성
+    let bands = '';
+    const bc = ['#e8d3b0', '#c9a37a', '#efe0c4', '#b88a62', '#e2c9a2', '#a97a55', '#efdcbc', '#c79f78', '#e6d1ad'];
+    for (let i = 0; i < 9; i++) bands += `<rect x="-130" y="${-115 + i * 26}" width="260" height="26" fill="${bc[i]}"/>`;
+    bands += `<ellipse cx="34" cy="36" rx="22" ry="12" fill="#c4553a"/><ellipse cx="34" cy="36" rx="13" ry="6" fill="#d8735a"/>`;
+    s += planetSVG('jupiter', 310, planetAt(3.8), 115, '#d9b88f', bands);
+    // 토성 (고리 뒤쪽 → 행성 → 고리 앞쪽)
+    const sy = planetAt(5.3);
+    s += `<g transform="translate(95 ${sy.toFixed(1)}) rotate(-14)">
+      <ellipse rx="130" ry="30" fill="none" stroke="#d8c08c" stroke-width="12" opacity=".75"/>
+      <ellipse rx="108" ry="24" fill="none" stroke="#bfa572" stroke-width="7" opacity=".7"/></g>`;
+    let sb = '';
+    for (let i = 0; i < 6; i++) sb += `<rect x="-70" y="${-62 + i * 22}" width="140" height="22" fill="${i % 2 ? '#e7d29e' : '#d6bd86'}"/>`;
+    s += planetSVG('saturn', 95, sy, 62, '#e2cc96', sb);
+    s += `<g transform="translate(95 ${sy.toFixed(1)}) rotate(-14)">
+      <path d="M-130 0 A130 30 0 0 0 130 0" fill="none" stroke="#e6d09c" stroke-width="12" opacity=".9"/>
+      <path d="M-108 0 A108 24 0 0 0 108 0" fill="none" stroke="#c9ae79" stroke-width="7" opacity=".85"/></g>`;
+    // 천왕성
+    s += `<g transform="translate(315 ${planetAt(6.6).toFixed(1)}) rotate(80)">
+      <ellipse rx="70" ry="12" fill="none" stroke="#bfeff2" stroke-width="2" opacity=".6"/></g>`;
+    s += planetSVG('uranus', 315, planetAt(6.6), 44, '#9fe1e6',
+      `<rect x="-50" y="-6" width="100" height="10" fill="#b9ecef" opacity=".6"/>`);
+    // 해왕성
+    s += planetSVG('neptune', 85, planetAt(7.3), 42, '#3f66d8',
+      `<rect x="-50" y="-14" width="100" height="8" fill="#5a82ec" opacity=".7"/>
+       <rect x="-50" y="10" width="100" height="6" fill="#3353b8" opacity=".7"/>
+       <ellipse cx="-12" cy="-2" rx="10" ry="5" fill="#26408f"/>`);
+    // 태양계 끝: 멀리 작아지는 태양
+    s += `<g transform="translate(330 ${planetAt(8.1).toFixed(1)})">
+      <circle r="26" fill="#ffcf6a" opacity=".25"/><circle r="12" fill="#fff1b8"/></g>`;
+    $planets.innerHTML = s;
+  })();
+
+  /* ---------- 은하수 성운 (시차 레이어) ---------- */
+  const N_PAR = 0.55;
+  (function buildNebula() {
+    const r = rng(23);
+    let s = '';
+    for (let i = 0; i < 16; i++) {
+      const d = 8.2 + r() * 1.7;
+      const y = 150 - camFor(hAt(d)) * N_PAR + (r() - .5) * 200;
+      const g = ['neb1', 'neb2', 'neb3'][i % 3];
+      s += `<ellipse cx="${(r() * 400).toFixed(0)}" cy="${y.toFixed(0)}" rx="${(120 + r() * 140).toFixed(0)}" ry="${(70 + r() * 90).toFixed(0)}" fill="url(#${g})" transform="rotate(${(r() * 60 - 30).toFixed(0)} 200 ${y.toFixed(0)})"/>`;
+    }
+    // 은하수 띠의 촘촘한 별 무리
+    for (let i = 0; i < 260; i++) {
+      const d = 8.2 + r() * 1.7;
+      const y = 150 - camFor(hAt(d)) * N_PAR + (r() - .5) * 160;
+      const c = r() < .5 ? '#fff' : r() < .5 ? '#ffd9f0' : '#d4e6ff';
+      s += `<circle cx="${(r() * 400).toFixed(1)}" cy="${y.toFixed(1)}" r="${(.4 + r() * 1.4).toFixed(2)}" fill="${c}" opacity="${(.5 + r() * .5).toFixed(2)}"/>`;
+    }
+    $nebula.innerHTML = s;
+  })();
+
+  /* ---------- 밖에서 본 우리 은하 ---------- */
+  (function buildGalaxy() {
+    const r = rng(5);
+    let s = `<ellipse rx="190" ry="190" fill="url(#neb1)" opacity=".7"/>`;
+    for (let k = 0; k < 900; k++) {
+      const arm = k % 3, f = r();
+      const rad = 10 + Math.pow(f, .8) * 170;
+      const ang = arm * (2 * Math.PI / 3) + f * 5.2 + (r() - .5) * 0.5;
+      const jitter = (r() - .5) * rad * 0.18;
+      const x = (rad + jitter) * Math.cos(ang), y = (rad + jitter) * Math.sin(ang);
+      const c = f < .25 ? '#ffe7b0' : r() < .6 ? '#cfe2ff' : '#ffc8ea';
+      s += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(.5 + r() * 1.5).toFixed(2)}" fill="${c}" opacity="${(.45 + r() * .55).toFixed(2)}"/>`;
+    }
+    s += `<circle r="46" fill="url(#core)"/>`;
+    $galaxyInner.innerHTML = s;
+  })();
+
   /* ---------- 나무 ---------- */
   const branches = (() => {
     const r = rng(42), list = [];
     let hb = 150, side = r() < .5 ? -1 : 1;
-    while (hb < MOON_H + 400) {
+    while (hb < FAR_H + 400) {
       list.push({ hb, side, maxL: 50 + r() * 45, ang: 0.45 + r() * 0.35, hue: r() });
       hb += 34 + r() * 26;
       side = -side;
     }
     return list;
   })();
-
-  const mix = (a, b, t) => {
-    t = Math.max(0, Math.min(1, t));
-    const pa = a.match(/\w\w/g).map(x => parseInt(x, 16)), pb = b.match(/\w\w/g).map(x => parseInt(x, 16));
-    return '#' + pa.map((v, i) => Math.round(v + (pb[i] - v) * t).toString(16).padStart(2, '0')).join('');
-  };
   const swayX = (y, h) => BASE_X + Math.sin((BASE_Y - y) * 0.018) * Math.min(8, h * 0.03);
 
   function drawTree(h, tSec, camY) {
@@ -470,11 +618,16 @@
     const width = y => Math.max(2.4, baseW * (1 - (BASE_Y - y) / h * 0.6)) / 2;
     let s = '';
 
-    for (const b of branches) {
+    // 가지: 이진 탐색으로 화면 근처만
+    let lo = 0, hi = branches.length;
+    const hbMin = BASE_Y - viewBot;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (branches[m].hb < hbMin) lo = m + 1; else hi = m; }
+    for (let i = lo; i < branches.length; i++) {
+      const b = branches[i];
       const age = h - b.hb - 24;
       if (age <= 0) break;
       const y0 = yAt(b.hb);
-      if (y0 < viewTop || y0 > viewBot) continue;
+      if (y0 < viewTop) break;
       const L = Math.min(b.maxL, age * 0.9);
       const x0 = swayX(y0, h);
       const x1 = x0 + b.side * L * Math.cos(b.ang), y1 = y0 - L * Math.sin(b.ang);
@@ -489,7 +642,6 @@
         <circle cx="${(-lr * .25).toFixed(1)}" cy="${(-lr * .3).toFixed(1)}" r="${(lr * .55).toFixed(1)}" fill="${g2}"/></g>`;
     }
 
-    // 줄기: 화면에 보이는 구간만 그림
     const yFrom = Math.min(BASE_Y, viewBot), yTo = Math.max(topY, viewTop);
     if (yFrom > yTo) {
       const left = [], right = [];
@@ -551,45 +703,55 @@
     $tree.innerHTML = s;
   }
 
-  /* ---------- 지구 (우주에서 내려다보기) ---------- */
+  /* ---------- 지구 / 우리 은하 전경 ---------- */
   const earthEls = ['earthGlow', 'earthBody', 'earthClipCircle'].map($);
   function drawEarth(alt) {
-    // alt: 카메라 기준 고도(px). 대기권 근처부터 서서히 나타나고, 멀어질수록 작아짐
-    const o = Math.max(0, Math.min(1, (alt - (ATMO - 500)) / 700));
+    const far = alt - ATMO;
+    const o = clamp01((alt - (ATMO - 500)) / 700) * clamp01(1 - (far - 900) / 700);
     $earth.setAttribute('opacity', o.toFixed(3));
     if (o <= 0) return;
-    const far = Math.max(0, alt - ATMO);
-    const R = 1400 / (1 + far / 900) + 160;
-    const top = 210 + Math.min(40, far * 0.01);
+    const R = 1400 / (1 + Math.max(0, far) / 250) + 40;
+    const top = 210 + Math.min(60, Math.max(0, far) * 0.05);
     const cy = top + R;
     earthEls[0].setAttribute('cy', cy); earthEls[0].setAttribute('r', R + 10 + R * 0.012);
     earthEls[1].setAttribute('cy', cy); earthEls[1].setAttribute('r', R);
     earthEls[2].setAttribute('cy', cy); earthEls[2].setAttribute('r', R);
     const k = R / 1200;
     $('earthLandInner').setAttribute('transform',
-      `translate(200 ${top}) scale(${k.toFixed(3)}) translate(-200 -260) rotate(${(performance.now() / 1000 * 0.6).toFixed(2)} 200 ${1200})`);
+      `translate(200 ${top}) scale(${k.toFixed(3)}) translate(-200 -260) rotate(${(performance.now() / 1000 * 0.6).toFixed(2)} 200 1200)`);
+  }
+  const H_GAL_OUT = hAt(9.6);
+  function drawGalaxyView(alt, tSec) {
+    const o = clamp01((alt - camFor(H_GAL_OUT)) / 900);
+    $galaxyView.setAttribute('opacity', o.toFixed(3));
+    if (o <= 0) return;
+    const far = Math.max(0, alt - camFor(H20));
+    const k = 2.6 / (1 + far / 600) + 0.55;
+    const cy = 250 + 40 / (1 + far / 400);
+    $galaxyInner.setAttribute('transform',
+      `translate(200 ${cy.toFixed(1)}) scale(${k.toFixed(3)}) scale(1 .42) rotate(${(tSec * 3).toFixed(2)})`);
   }
 
   /* ---------- 속도선 ---------- */
   const ctx = $fx.getContext('2d');
-  const streaks = Array.from({ length: 46 }, () => ({ x: Math.random(), y: Math.random(), l: .4 + Math.random() * .6 }));
-  function drawFx(v, dt, alt) {
+  const streaks = Array.from({ length: 52 }, () => ({ x: Math.random(), y: Math.random(), l: .4 + Math.random() * .6 }));
+  function drawFx(v, dt, alt, gal) {
     const W = $fx.clientWidth, H = $fx.clientHeight, dpr = devicePixelRatio || 1;
     if ($fx.width !== Math.round(W * dpr)) { $fx.width = Math.round(W * dpr); $fx.height = Math.round(H * dpr); }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
-    const k = Math.max(0, Math.min(1, (v - 120) / 600));
+    const k = clamp01((v - 120) / 600);
     if (k <= 0) return;
     const scale = H / 300;
     const inCloud = alt > 1450 && alt < 1950;
     ctx.lineCap = 'round';
     for (const s of streaks) {
-      s.y += v * dt * scale * (0.9 + s.l) / H * 1.6;
+      s.y += Math.min(v, 1100) * dt * scale * (0.9 + s.l) / H * 1.6;
       if (s.y > 1.2) { s.y -= 1.4; s.x = Math.random(); }
-      const len = (20 + v * 0.12) * s.l * scale;
+      const len = (20 + Math.min(v, 1400) * 0.12) * s.l * scale;
       const x = s.x * W, y = s.y * H;
       const g = ctx.createLinearGradient(x, y - len, x, y);
-      const c = alt > ATMO - 400 ? '255,255,255' : inCloud ? '200,214,230' : '255,255,255';
+      const c = gal > .2 ? (s.l > .7 ? '255,200,240' : '200,220,255') : inCloud ? '200,214,230' : '255,255,255';
       g.addColorStop(0, `rgba(${c},0)`);
       g.addColorStop(1, `rgba(${c},${(.55 * k * s.l).toFixed(3)})`);
       ctx.strokeStyle = g;
@@ -603,11 +765,13 @@
     $banner.textContent = text;
     $banner.classList.remove('on'); void $banner.offsetWidth; $banner.classList.add('on');
   }
-  function flash() {
+  function flash(violet) {
+    $flash.classList.toggle('violet', !!violet);
     $flash.classList.remove('on'); void $flash.offsetWidth; $flash.classList.add('on');
   }
   let shakeBurst = 0, ringT = -1;
 
+  const pass = d => hAt(d) - 110;   // 행성이 화면에 들어올 즈음
   const events = [
     { h: 1,    say: '앗, 입에서 새싹이 났어요!' },
     { h: 90,   say: '꽃이 피었어요 🌼' },
@@ -615,12 +779,21 @@
     { h: 700,  say: '열기구를 지나쳐요 🎈' },
     { h: 1250, say: '비행기보다 높이! ✈️' },
     { h: 1480, banner: '구름 속으로!', shake: 4, say: '앞이 하나도 안 보여요!' },
-    { h: 1960, banner: '구름 돌파!', shake: 6, flash: true, say: '구름 바다 위예요 ☁️' },
+    { h: 1960, banner: '구름 돌파!', shake: 6, flash: 1, say: '구름 바다 위예요 ☁️' },
     { h: 2600, say: '하늘이 점점 어두워져요…' },
-    { h: ATMO, banner: '대기권 돌파!!', shake: 14, flash: true, ring: true, say: '지구 밖으로 나왔어요!' },
-    { h: ATMO + 500, say: '저기 지구가 보여요 🌍' },
-    { h: 4400, say: '인공위성 안녕! 🛰️' },
-    { h: MOON_H - 30, banner: '달 도착 🌙', shake: 6, flash: true, say: '드디어 달까지 자랐어요!' },
+    { h: ATMO, banner: '대기권 돌파!!', shake: 14, flash: 1, ring: true, say: '지구 밖으로 나왔어요! 🌍' },
+    { h: ATMO + 250, say: '인공위성 안녕! 🛰️' },
+    { h: pass(1.0), banner: '달 통과!', shake: 3, say: '달이 휙 지나가요 🌙' },
+    { h: pass(2.3), banner: '화성', shake: 3, say: '붉은 행성, 화성이에요' },
+    { h: pass(3.8), banner: '목성!!', shake: 6, say: '엄청 커요… 태양계 최대 행성!' },
+    { h: pass(5.3), banner: '토성 🪐', shake: 4, say: '고리가 정말 멋져요' },
+    { h: pass(6.6), say: '옆으로 누운 천왕성…' },
+    { h: pass(7.3), say: '해왕성! 태양계 마지막 행성이에요' },
+    { h: hAt(8.0), banner: '태양계 탈출!', shake: 8, flash: 1, say: '태양이 점처럼 작아졌어요 ☀️' },
+    { h: hAt(8.4), banner: '은하수 속으로!', shake: 5, say: '별들이 쏟아져요 ✨' },
+    { h: H20, banner: '은하계 돌파!!', shake: 16, flash: 2, ring: true, say: '우리 은하가 한눈에 보여요 🌌' },
+    { h: H20 + 900, say: '이제 우주를 천천히 떠다니며 자라요' },
+    { h: FAR_H - 20, banner: '안드로메다 도착 🌌', shake: 6, flash: 2, say: '1시간 동안 250만 광년을 자랐어요!' },
   ];
   let eventIdx = 0;
   function fireEvents(h) {
@@ -629,7 +802,7 @@
       if (!running) continue;
       if (e.say) say(e.say);
       if (e.banner) banner(e.banner);
-      if (e.flash) flash();
+      if (e.flash) flash(e.flash === 2);
       if (e.shake) shakeBurst = Math.max(shakeBurst, e.shake);
       if (e.ring) ringT = 0;
     }
@@ -637,11 +810,11 @@
 
   /* ---------- 메인 루프 ---------- */
   let camY = 0, raf = 0, lastT = performance.now(), lastH = 0;
-  const FOCUS_Y = 50;
-  const targetCam = h => Math.max(0, FOCUS_Y - yAt(h) + 40);
+  const targetCam = h => Math.max(0, camFor(h));
+  const GAL_A = camFor(hAt(8.2)), GAL_B = camFor(hAt(9.9));
 
   function frame() {
-    const nowT = performance.now();
+    const nowT = performance.now(), tSec = nowT / 1000;
     const dt = Math.min(0.1, (nowT - lastT) / 1000);
     lastT = nowT;
 
@@ -656,27 +829,32 @@
     $stage.classList.toggle('sprouted', h >= 1);
     fireEvents(h);
 
-    // 카메라: 자라는 동안엔 꼭대기에 딱 붙어서, 초기화 땐 스르륵 내려옴
     const goal = targetCam(h);
     if (running) camY = goal;
     else { camY += (goal - camY) * Math.min(1, dt * 4); if (Math.abs(goal - camY) < 0.5) camY = goal; }
 
     const alt = camY + 115;
+    const gal = bump(camY, GAL_A, GAL_B, 500);
+
     shakeBurst *= Math.pow(0.04, dt);
-    const amp = Math.min(3, v / 300) + shakeBurst;
+    const amp = Math.min(alt > ATMO + 400 ? 1.2 : 3, v / 300) + shakeBurst;
     const sx = (Math.random() - .5) * amp, sy = (Math.random() - .5) * amp;
     const tr = `translate(${sx.toFixed(2)} ${(camY + sy).toFixed(2)})`;
     cams.forEach(c => c.setAttribute('transform', tr));
+    $planets.setAttribute('transform', `translate(${(sx * .5).toFixed(2)} ${(camY * P_PAR).toFixed(2)})`);
+    $nebula.setAttribute('transform', `translate(0 ${(camY * N_PAR).toFixed(2)})`);
+    $nebula.setAttribute('opacity', gal.toFixed(3));
+    $spaceTint.setAttribute('opacity', (gal * .55 + clamp01((camY - camFor(H20)) / 1500) * .25).toFixed(3));
 
-    drawTree(h, nowT / 1000, camY);
+    drawStars(camY, alt, gal, tSec);
+    drawTree(h, tSec, camY);
     drawEarth(alt);
-    drawFx(v, dt, alt);
+    drawGalaxyView(alt, tSec);
+    drawFx(v, dt, alt, gal);
 
-    // 구름 속 화이트아웃
     const c = (alt - 1480) / 480;
     $whiteout.style.opacity = c > 0 && c < 1 ? (Math.sin(Math.PI * c) * 0.85).toFixed(3) : 0;
 
-    // 대기권 돌파 충격파
     if (ringT >= 0) {
       ringT += dt;
       const p = ringT / 1.2;
@@ -684,13 +862,13 @@
       else {
         const x = swayX(yAt(h), h), y = yAt(h) - 10;
         $ring.innerHTML = `<ellipse cx="${x}" cy="${y}" rx="${(20 + p * 260).toFixed(1)}" ry="${(8 + p * 90).toFixed(1)}" fill="none" stroke="#fff" stroke-width="${(6 * (1 - p)).toFixed(2)}" opacity="${(1 - p).toFixed(2)}"/>
-          <ellipse cx="${x}" cy="${y}" rx="${(10 + p * 180).toFixed(1)}" ry="${(4 + p * 60).toFixed(1)}" fill="none" stroke="#ffcf6a" stroke-width="${(4 * (1 - p)).toFixed(2)}" opacity="${(1 - p).toFixed(2)}"/>`;
+          <ellipse cx="${x}" cy="${y}" rx="${(10 + p * 180).toFixed(1)}" ry="${(4 + p * 60).toFixed(1)}" fill="none" stroke="${gal > .1 || alt > H20 ? '#d6a8ff' : '#ffcf6a'}" stroke-width="${(4 * (1 - p)).toFixed(2)}" opacity="${(1 - p).toFixed(2)}"/>`;
       }
     }
 
     const settling = camY !== goal || shakeBurst > 0.05 || ringT >= 0;
-    if (running || settling) raf = requestAnimationFrame(frame);
-    else { raf = 0; drawFx(0, 0, alt); }
+    if (running || settling || alt > ATMO) raf = requestAnimationFrame(frame);
+    else { raf = 0; drawFx(0, 0, alt, 0); }
   }
   const kick = () => { if (!raf) { lastT = performance.now(); raf = requestAnimationFrame(frame); } };
 
@@ -742,7 +920,7 @@
     lapHeights.push(growth(t));
     lastLapTotal = t;
     renderLaps();
-    say(`랩 ${laps.length} — ${altLabel(growth(t)).replace(/^\S+ /, '')} 지점에 리본을 묶었어요 🎀`);
+    say(`랩 ${laps.length} — ${distText(growth(t))} 지점에 리본을 묶었어요 🎀`);
   }
 
   function reset() {
