@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>서거름 스탑워치</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #efe6d4;
@@ -85,20 +88,42 @@
     100% { opacity: 0; transform: scale(.9) translateY(-10px); }
   }
 
+  /* 말풍선: 서거름 머리 위(왼쪽)에 붙어 다니다가, 서거름이 화면 밖으로 나가면 아래쪽에 고정 */
   .bubble {
-    position: absolute; bottom: 12px; left: 12px;
-    background: rgba(255, 252, 244, .92);
-    color: #6a5038;
-    border-radius: 14px;
-    padding: 7px 12px;
-    font-size: 13px;
-    line-height: 1.4;
-    max-width: 62%;
+    position: absolute; left: 12px; top: 0;
+    width: 46%;
+    transform: translateY(-100%);
+    display: flex; align-items: center; gap: 8px;
+    background: #fffaf0;
+    color: #5a4029;
+    border: 2px solid #e6d3b3;
+    border-radius: 18px;
+    padding: 8px 13px;
+    font-family: "Jua", "Pretendard", "Malgun Gothic", sans-serif;
+    font-size: 15px;
+    line-height: 1.35;
     box-shadow: 0 4px 10px -6px rgba(0,0,0,.35);
+    will-change: top;
   }
-  .bubble b { color: #3d2a17; }
+  .bubble::after {
+    content: "";
+    position: absolute; right: 22px; bottom: -9px;
+    width: 14px; height: 14px;
+    background: #fffaf0;
+    border-right: 2px solid #e6d3b3;
+    border-bottom: 2px solid #e6d3b3;
+    transform: rotate(45deg) skew(8deg, 8deg);
+    border-radius: 0 0 4px 0;
+    transition: opacity .2s;
+  }
+  .bubble b { color: #3d2a17; font-weight: 400; }
+  .stage .bubble .ava { position: static; flex: 0 0 auto; width: 26px; height: 26px; display: none; }
+  .bubble.docked { width: auto; max-width: 70%; }
+  .bubble.docked::after { opacity: 0; }
+  .bubble.docked .ava { display: block; }
+  .banner { font-family: "Jua", "Pretendard", "Malgun Gothic", sans-serif; font-weight: 400; }
   .height {
-    position: absolute; top: 12px; right: 12px;
+    position: absolute; bottom: 12px; right: 12px;
     background: rgba(20, 14, 8, .55);
     color: #fff;
     border-radius: 999px;
@@ -305,7 +330,15 @@
     <div class="whiteout" id="whiteout"></div>
     <div class="flash" id="flash"></div>
     <div class="banner" id="banner"></div>
-    <div class="bubble" id="bubble">안녕, 나는 <b>서거름</b>!<br>시작을 누르면 꽃을 피울게요</div>
+    <div class="bubble" id="bubble">
+      <svg class="ava" viewBox="0 0 40 36" aria-hidden="true">
+        <path d="M20 6 c2 0 3 -2 2.5 -4.5 c2.5 1.2 3.2 4 2 6 c8 2 13 8 13 15 c0 7 -7 10 -17.5 10 s-17.5 -3 -17.5 -10 c0 -9 7 -16.5 17.5 -16.5z" fill="#a8764a"/>
+        <ellipse cx="15" cy="20" rx="2" ry="2.6" fill="#24170c"/><ellipse cx="25" cy="20" rx="2" ry="2.6" fill="#24170c"/>
+        <ellipse cx="11" cy="25" rx="3" ry="1.8" fill="#e9826d" opacity=".6"/><ellipse cx="29" cy="25" rx="3" ry="1.8" fill="#e9826d" opacity=".6"/>
+        <ellipse cx="20" cy="26" rx="2.2" ry="1.8" fill="#4a2414"/>
+      </svg>
+      <span id="bubbleText">안녕, 나는 <b>서거름</b>!<br>시작하면 꽃을 피울게요</span>
+    </div>
     <div class="height" id="height">🌱 0m</div>
   </div>
 
@@ -846,6 +879,7 @@
     $nebula.setAttribute('opacity', gal.toFixed(3));
     $spaceTint.setAttribute('opacity', (gal * .55 + clamp01((camY - camFor(H20)) / 1500) * .25).toFixed(3));
 
+    placeBubble(camY + sy);
     drawStars(camY, alt, gal, tSec);
     drawTree(h, tSec, camY);
     drawEarth(alt);
@@ -872,7 +906,18 @@
   }
   const kick = () => { if (!raf) { lastT = performance.now(); raf = requestAnimationFrame(frame); } };
 
-  function say(html) { $bubble.innerHTML = html; }
+  function say(html) { $('bubbleText').innerHTML = html; }
+
+  // 말풍선을 서거름 머리 위에 붙임. 머리가 화면 아래로 사라지면 아래쪽에 고정(작은 얼굴 표시)
+  const HEAD_TOP = 84;   // 서거름 머리 꼭지 바로 위 (월드 y)
+  function placeBubble(camY) {
+    const k = $stage.clientHeight / 300;
+    const anchor = (HEAD_TOP + camY) * k;
+    const maxY = $stage.clientHeight - 14;
+    const docked = anchor > maxY;
+    $bubble.style.top = Math.min(anchor, maxY).toFixed(1) + 'px';
+    $bubble.classList.toggle('docked', docked);
+  }
   function setState(state) {
     $stage.classList.remove('idle', 'running', 'paused');
     $stage.classList.add(state);
@@ -931,7 +976,7 @@
     $lap.disabled = true;
     renderLaps();
     setState('idle');
-    say('안녕, 나는 <b>서거름</b>!<br>시작을 누르면 꽃을 피울게요');
+    say('안녕, 나는 <b>서거름</b>!<br>시작하면 꽃을 피울게요');
     kick();
   }
 
@@ -944,6 +989,8 @@
     else if (e.code === 'KeyR') reset();
   });
 
+  addEventListener('resize', kick);
+  document.fonts && document.fonts.ready.then(kick);
   kick();
 </script>
 </body>
