@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>서거름 스탑워치</title>
+<style>
+  :root {
+    --bg: #efe6d4;
+    --card: #fbf6ec;
+    --line: rgba(74, 48, 24, 0.12);
+    --ink: #3d2a17;
+    --dim: #8b7258;
+    --start: #6f9a3f;
+    --stop: #c8643f;
+    --best: #5f8c34;
+    --worst: #c0583a;
+    --btn: #eadcc3;
+    --clay-hi: #c99a6c;
+    --clay: #a8764a;
+    --clay-lo: #7d5330;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1d1712;
+      --card: #261e17;
+      --line: rgba(240, 220, 190, 0.1);
+      --ink: #f2e6d4;
+      --dim: #b49e84;
+      --start: #8cbc56;
+      --stop: #ec835c;
+      --best: #9ccc64;
+      --worst: #f08b66;
+      --btn: #3a2e23;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Pretendard", system-ui, -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px 48px;
+  }
+  .wrap { width: 100%; max-width: 440px; }
+
+  /* ---------- 무대 ---------- */
+  .stage {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 24px 24px 0 0;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-bottom: none;
+    background: #0d1330;
+  }
+  .stage svg, .stage canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+  .stage canvas { pointer-events: none; }
+
+  .whiteout, .flash { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+  .whiteout { background: #f4f7fa; }
+  .flash { background: radial-gradient(circle at 50% 30%, #fff 0 30%, #fff7d6 60%, #ffd27a 100%); }
+  .flash.on { animation: flash .9s ease-out; }
+  @keyframes flash { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+  .banner {
+    position: absolute; left: 0; right: 0; top: 38%;
+    text-align: center;
+    font-size: clamp(22px, 7vw, 32px);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    color: #fff;
+    text-shadow: 0 2px 0 rgba(0,0,0,.35), 0 0 18px rgba(255,180,80,.7);
+    pointer-events: none;
+    opacity: 0;
+  }
+  .banner.on { animation: banner 1.6s cubic-bezier(.2,1.4,.4,1) forwards; }
+  @keyframes banner {
+    0% { opacity: 0; transform: scale(2.2); }
+    15% { opacity: 1; transform: scale(1); }
+    75% { opacity: 1; transform: scale(1.04); }
+    100% { opacity: 0; transform: scale(.9) translateY(-10px); }
+  }
+
+  .bubble {
+    position: absolute; bottom: 12px; left: 12px;
+    background: rgba(255, 252, 244, .92);
+    color: #6a5038;
+    border-radius: 14px;
+    padding: 7px 12px;
+    font-size: 13px;
+    line-height: 1.4;
+    max-width: 62%;
+    box-shadow: 0 4px 10px -6px rgba(0,0,0,.35);
+  }
+  .bubble b { color: #3d2a17; }
+  .height {
+    position: absolute; top: 12px; right: 12px;
+    background: rgba(20, 14, 8, .55);
+    color: #fff;
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .arm { transform-box: fill-box; transform-origin: 50% 20%; }
+  .running .arm-l { animation: wave-l .6s ease-in-out infinite; }
+  .running .arm-r { animation: wave-r .6s ease-in-out infinite; }
+  @keyframes wave-l { 50% { transform: rotate(-16deg) translateY(-3px); } }
+  @keyframes wave-r { 50% { transform: rotate(16deg) translateY(-3px); } }
+
+  .eyes > g { opacity: 0; }
+  .idle .e-open, .running .e-happy, .paused .e-wink { opacity: 1; }
+  .blink { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
+  @keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.1); } }
+  .mouth > * { opacity: 0; }
+  .stage:not(.sprouted) .m-smile, .sprouted .m-o { opacity: 1; }
+
+  .sweat { opacity: 0; }
+  .running .sweat { animation: sweat 1.1s ease-in infinite; }
+  @keyframes sweat {
+    0% { opacity: 0; transform: translate(0, 0); }
+    30% { opacity: .9; }
+    100% { opacity: 0; transform: translate(6px, 14px); }
+  }
+
+  /* ---------- 카드 ---------- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 0 0 24px 24px;
+    padding: 22px 22px 20px;
+    box-shadow: 0 24px 40px -28px rgba(61, 42, 23, .55);
+  }
+  .time {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: clamp(46px, 14vw, 66px);
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .time .ms { color: var(--dim); font-size: 0.55em; }
+  .lap-now {
+    text-align: center; color: var(--dim);
+    font-family: ui-monospace, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    margin-top: 8px; height: 1.2em; font-size: 14px;
+  }
+  .buttons { display: flex; gap: 12px; margin-top: 18px; }
+  button {
+    flex: 1;
+    font: inherit; font-size: 17px; font-weight: 700;
+    padding: 15px 0;
+    border-radius: 999px;
+    border: none; cursor: pointer;
+    background: var(--btn); color: var(--ink);
+    box-shadow: inset 0 -4px 0 rgba(0,0,0,.12);
+    transition: transform .08s, opacity .15s;
+  }
+  button:active { transform: translateY(2px); box-shadow: inset 0 -2px 0 rgba(0,0,0,.12); }
+  button:disabled { opacity: .45; cursor: default; transform: none; }
+  #toggle { background: var(--start); color: #fff; }
+  #toggle.running { background: var(--stop); }
+  .hint { text-align: center; color: var(--dim); font-size: 12px; margin-top: 12px; }
+  kbd { font-family: inherit; font-size: 11px; border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
+
+  .laps { margin: 18px 0 0; list-style: none; padding: 0; }
+  .laps li {
+    display: flex; align-items: center;
+    padding: 12px 10px;
+    border-bottom: 1px dashed var(--line);
+    font-variant-numeric: tabular-nums;
+    font-family: ui-monospace, Consolas, monospace;
+    font-size: 15px;
+    animation: drop .3s ease-out;
+  }
+  @keyframes drop { from { opacity: 0; transform: translateY(-6px); } }
+  .laps li span { flex: 1; }
+  .laps li span:not(:first-child) { text-align: right; }
+  .laps .n { color: var(--dim); font-family: system-ui, "Malgun Gothic", sans-serif; }
+  .laps .split { color: var(--dim); }
+  .laps li.best .lap { color: var(--best); font-weight: 700; }
+  .laps li.worst .lap { color: var(--worst); font-weight: 700; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="stage idle" id="stage">
+    <svg viewBox="0 0 400 300" aria-label="서거름의 입에서 자라 우주까지 뻗는 나무">
+      <defs>
+        <!-- 고도별 하늘: 땅(270) → 구름층 → 대기권 끝(-3395) → 우주 -->
+        <linearGradient id="sky" gradientUnits="userSpaceOnUse" x1="0" y1="270" x2="0" y2="-3700">
+          <stop offset="0" stop-color="#f6ecd8"/>
+          <stop offset=".08" stop-color="#d6ebf3"/>
+          <stop offset=".3" stop-color="#9fd0f0"/>
+          <stop offset=".48" stop-color="#6fb0e6"/>
+          <stop offset=".62" stop-color="#3f74c4"/>
+          <stop offset=".78" stop-color="#22357a"/>
+          <stop offset=".9" stop-color="#121a45"/>
+          <stop offset="1" stop-color="#05070f"/>
+        </linearGradient>
+        <radialGradient id="clay" cx="38%" cy="30%" r="75%">
+          <stop offset="0" stop-color="var(--clay-hi)"/>
+          <stop offset=".55" stop-color="var(--clay)"/>
+          <stop offset="1" stop-color="var(--clay-lo)"/>
+        </radialGradient>
+        <radialGradient id="clayArm" cx="35%" cy="30%" r="80%">
+          <stop offset="0" stop-color="var(--clay-hi)"/>
+          <stop offset="1" stop-color="var(--clay-lo)"/>
+        </radialGradient>
+        <radialGradient id="earthSea" cx="40%" cy="30%" r="70%">
+          <stop offset="0" stop-color="#4fa3e8"/>
+          <stop offset=".7" stop-color="#1f5fb0"/>
+          <stop offset="1" stop-color="#123a7a"/>
+        </radialGradient>
+        <clipPath id="earthClip"><circle id="earthClipCircle" cx="200" cy="1500" r="1200"/></clipPath>
+      </defs>
+
+      <!-- 뒤쪽 월드: 하늘, 장식 -->
+      <g class="cam">
+        <rect x="-60" y="-200000" width="520" height="200400" fill="url(#sky)"/>
+        <g id="decorBack"></g>
+      </g>
+
+      <!-- 화면 고정: 우주에서 내려다본 지구 -->
+      <g id="earth" opacity="0">
+        <circle id="earthGlow" cx="200" cy="1500" r="1216" fill="#7fc4ff" opacity=".35"/>
+        <circle id="earthBody" cx="200" cy="1500" r="1200" fill="url(#earthSea)"/>
+        <g clip-path="url(#earthClip)" id="earthLand"></g>
+      </g>
+
+      <!-- 앞쪽 월드: 땅, 서거름, 나무, 앞 구름 -->
+      <g class="cam">
+        <path d="M-60 262 C60 254 140 266 220 260 C300 254 360 264 460 258 L460 420 L-60 420 Z" fill="#d6bf93"/>
+        <path d="M-60 282 C80 274 200 290 320 280 C380 276 420 282 460 280 L460 420 L-60 420 Z" fill="#c6ab7a"/>
+        <circle cx="60" cy="290" r="4" fill="#b0966a"/><circle cx="330" cy="296" r="3" fill="#b0966a"/><circle cx="110" cy="280" r="2.5" fill="#b0966a"/>
+        <ellipse cx="200" cy="257" rx="80" ry="9" fill="#3d2a17" opacity=".18"/>
+
+        <g id="mascot" transform="translate(30 59)">
+          <ellipse class="arm arm-l" cx="102" cy="168" rx="26" ry="20" fill="url(#clayArm)"/>
+          <ellipse class="arm arm-r" cx="238" cy="168" rx="26" ry="20" fill="url(#clayArm)"/>
+          <path d="M170 52 c10 0 16 -10 13 -22 c12 6 16 20 10 30 c44 10 70 46 70 86 c0 36 -40 52 -93 52 s-93 -16 -93 -52 c0 -50 40 -94 93 -94 z" fill="url(#clay)"/>
+          <path d="M118 96 q10 -10 22 -12" stroke="#fff" stroke-opacity=".18" stroke-width="5" fill="none" stroke-linecap="round"/>
+          <path d="M226 160 q14 -6 22 -20" stroke="#000" stroke-opacity=".08" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <ellipse class="arm arm-l" cx="102" cy="170" rx="22" ry="16" fill="url(#clayArm)"/>
+          <ellipse class="arm arm-r" cx="238" cy="170" rx="22" ry="16" fill="url(#clayArm)"/>
+          <ellipse cx="124" cy="140" rx="15" ry="9" fill="#e9826d" opacity=".45"/>
+          <ellipse cx="218" cy="140" rx="15" ry="9" fill="#e9826d" opacity=".45"/>
+          <g class="eyes">
+            <g class="e-open"><g class="blink">
+              <ellipse cx="146" cy="122" rx="7" ry="9" fill="#24170c"/>
+              <ellipse cx="196" cy="122" rx="7" ry="9" fill="#24170c"/>
+              <circle cx="148" cy="119" r="2.4" fill="#fff"/>
+              <circle cx="198" cy="119" r="2.4" fill="#fff"/>
+            </g></g>
+            <g class="e-happy">
+              <path d="M136 124 q10 -12 20 0" stroke="#24170c" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+              <path d="M186 124 q10 -12 20 0" stroke="#24170c" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+            </g>
+            <g class="e-wink">
+              <ellipse cx="146" cy="122" rx="7" ry="9" fill="#24170c"/>
+              <circle cx="148" cy="119" r="2.4" fill="#fff"/>
+              <path d="M188 122 l16 0" stroke="#24170c" stroke-width="4.5" stroke-linecap="round"/>
+            </g>
+          </g>
+          <g class="mouth">
+            <path class="m-smile" d="M163 144 q8 6 16 0" stroke="#24170c" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <ellipse class="m-o" cx="171" cy="146" rx="9" ry="7" fill="#4a2414"/>
+          </g>
+          <path class="sweat" d="M248 92 q8 12 0 16 q-8 -4 0 -16z" fill="#8cc6e8"/>
+        </g>
+
+        <g id="tree"></g>
+        <path id="lip" d="M192 210 q9 5 18 0" stroke="#4a2414" stroke-width="3" fill="none" stroke-linecap="round" opacity="0"/>
+        <g id="decorFront"></g>
+        <g id="ring"></g>
+      </g>
+    </svg>
+    <canvas id="fx"></canvas>
+    <div class="whiteout" id="whiteout"></div>
+    <div class="flash" id="flash"></div>
+    <div class="banner" id="banner"></div>
+    <div class="bubble" id="bubble">안녕, 나는 <b>서거름</b>!<br>시작을 누르면 꽃을 피울게요</div>
+    <div class="height" id="height">🌱 0m</div>
+  </div>
+
+  <div class="card">
+    <div class="time" id="time">00:00<span class="ms">.00</span></div>
+    <div class="lap-now" id="lapNow"></div>
+    <div class="buttons">
+      <button id="lap" disabled>랩</button>
+      <button id="toggle">시작</button>
+    </div>
+    <div class="hint"><kbd>Space</kbd> 시작/정지 · <kbd>L</kbd> 랩 · <kbd>R</kbd> 초기화</div>
+  </div>
+  <ul class="laps" id="laps"></ul>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const $time = $('time'), $lapNow = $('lapNow'), $toggle = $('toggle'), $lap = $('lap'),
+        $laps = $('laps'), $stage = $('stage'), $bubble = $('bubble'), $height = $('height'),
+        $tree = $('tree'), $lip = $('lip'), $banner = $('banner'), $flash = $('flash'),
+        $whiteout = $('whiteout'), $earth = $('earth'), $ring = $('ring'), $fx = $('fx');
+  const cams = document.querySelectorAll('.cam');
+
+  /* ---------- 스탑워치 상태 ---------- */
+  let running = false, startAt = 0, elapsed = 0, laps = [], lapHeights = [], lastLapTotal = 0;
+  const now = () => running ? elapsed + (performance.now() - startAt) : elapsed;
+
+  function fmt(ms, html) {
+    const cs = Math.floor(ms / 10) % 100;
+    const s = Math.floor(ms / 1000) % 60;
+    const m = Math.floor(ms / 60000) % 60;
+    const h = Math.floor(ms / 3600000);
+    const p = n => String(n).padStart(2, '0');
+    const main = (h ? h + ':' : '') + p(m) + ':' + p(s);
+    return html ? `${main}<span class="ms">.${p(cs)}</span>` : `${main}.${p(cs)}`;
+  }
+
+  /* ---------- 성장 곡선 ---------- */
+  const BASE_X = 201, BASE_Y = 205;      // 서거름의 입 (월드 좌표)
+  const ATMO = 3600;                     // 대기권 끝 (px)
+  const LAUNCH = 10;                     // 이 시간(초)에 대기권 돌파
+  const POW = 2.2;
+  const V_END = ATMO * POW / LAUNCH;     // 돌파 순간 속도 (px/s)
+  const TAU = 0.7;
+
+  // 0~10초: 점점 가속해서 대기권 돌파 → 이후 관성으로 감속하며 우주에서 천천히 자람
+  function growth(ms) {
+    const t = ms / 1000;
+    if (t <= LAUNCH) return ATMO * Math.pow(t / LAUNCH, POW);
+    const d = t - LAUNCH;
+    return ATMO + V_END * TAU * (1 - Math.exp(-d / TAU)) + 40 * Math.sqrt(d);
+  }
+  const MOON_H = growth(3600 * 1000);    // 1시간이면 달에 닿음
+
+  // 화면에 보여줄 실제 고도(m)
+  const ALT = [[0, 0], [250, 8], [700, 300], [1300, 2000], [1500, 3000], [1900, 7000],
+               [2600, 20000], [ATMO, 100000], [ATMO + 600, 400000], [ATMO + 1300, 36000000],
+               [MOON_H, 384400000]];
+  function altitude(h) {
+    for (let i = 1; i < ALT.length; i++) {
+      if (h <= ALT[i][0]) {
+        const [h0, a0] = ALT[i - 1], [h1, a1] = ALT[i];
+        return a0 + (a1 - a0) * (h - h0) / (h1 - h0);
+      }
+    }
+    return ALT[ALT.length - 1][1];
+  }
+  function altLabel(h) {
+    const m = altitude(h);
+    const icon = h < 250 ? '🌱' : h < ATMO ? '🌳' : '🚀';
+    if (m < 1000) return `${icon} ${m.toFixed(m < 10 ? 1 : 0)}m`;
+    return `${icon} ${Math.round(m / 1000).toLocaleString()}km`;
+  }
+  const yAt = h => BASE_Y - h;           // 높이 → 월드 y
+
+  /* ---------- 장식 ---------- */
+  function rng(seed) {
+    return () => {
+      seed |= 0; seed = seed + 0x6D2B79F5 | 0;
+      let t = Math.imul(seed ^ seed >>> 15, 1 | seed);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  const cloud = (x, y, k, o = 1, fill = '#fff') =>
+    `<g opacity="${o}" transform="translate(${x.toFixed(0)} ${y.toFixed(0)}) scale(${k.toFixed(2)})" fill="${fill}">
+      <ellipse cx="0" cy="0" rx="40" ry="15"/><ellipse cx="-18" cy="-9" rx="18" ry="14"/>
+      <ellipse cx="14" cy="-13" rx="23" ry="18"/><ellipse cx="32" cy="-2" rx="16" ry="11"/></g>`;
+
+  (function buildDecor() {
+    const r = rng(7);
+    let back = '', front = '';
+    // 낮은 하늘: 새, 열기구
+    for (let i = 0; i < 8; i++) {
+      const x = 20 + r() * 340, y = yAt(260 + r() * 500);
+      back += `<path d="M${x} ${y} q5 -5 10 0 q5 -5 10 0" stroke="#5b6b7a" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    }
+    back += `<g transform="translate(90 ${yAt(820)})">
+      <path d="M0 -30 c-26 0 -30 30 -10 46 l6 10 h8 l6 -10 c20 -16 16 -46 -10 -46z" fill="#ef7a5a"/>
+      <path d="M0 -30 c-8 0 -10 30 -4 46 h8 c6 -16 4 -46 -4 -46z" fill="#f6c453"/>
+      <rect x="-5" y="30" width="10" height="8" rx="2" fill="#8a5a2b"/></g>`;
+    // 흩어진 구름
+    for (let i = 0; i < 6; i++) back += cloud(20 + r() * 340, yAt(400 + r() * 900), .6 + r() * .5, .9);
+    // 비행기
+    back += `<g transform="translate(300 ${yAt(1320)})" fill="#e8eef4">
+      <rect x="-26" y="-4" width="52" height="8" rx="4"/>
+      <path d="M-4 0 l-12 -18 h6 l18 18z M-4 0 l-12 18 h6 l18 -18z" fill="#c9d4de"/>
+      <path d="M-26 0 l-6 -10 h5 l7 10z" fill="#c9d4de"/>
+      <path d="M26 2 h80" stroke="#fff" stroke-width="2" opacity=".7"/></g>`;
+    // 두꺼운 구름층 (나무가 뚫고 지나감)
+    for (let i = 0; i < 34; i++) {
+      const c = cloud(-30 + r() * 440, yAt(1480 + r() * 440), 1.2 + r() * 1.4, .95, i % 3 ? '#fff' : '#eef3f8');
+      if (i % 2) front += c; else back += c;
+    }
+    // 구름 바다 (위에서 내려다보는 구름 꼭대기)
+    for (let i = 0; i < 12; i++) back += cloud(-40 + i * 40, yAt(1960 + r() * 30), 1.6, 1, '#f3f6fa');
+    // 별
+    for (let i = 0; i < 520; i++) {
+      const h = 2300 + Math.pow(r(), .8) * (MOON_H + 600 - 2300);
+      const a = Math.min(1, (h - 2300) / 900);
+      back += `<circle cx="${(r() * 400).toFixed(1)}" cy="${yAt(h).toFixed(0)}" r="${(r() * 1.3 + .4).toFixed(2)}" fill="#fff" opacity="${(a * (.4 + r() * .6)).toFixed(2)}"/>`;
+    }
+    // 인공위성
+    back += `<g transform="translate(300 ${yAt(4400)}) rotate(-20)">
+      <rect x="-8" y="-6" width="16" height="12" rx="2" fill="#d9dde3"/>
+      <rect x="-40" y="-4" width="28" height="8" fill="#3d6fb8"/><rect x="12" y="-4" width="28" height="8" fill="#3d6fb8"/>
+      <path d="M-26 -4 v8 M26 -4 v8" stroke="#9fc0ea" stroke-width="1"/>
+      <circle cx="0" cy="-10" r="3" fill="#e2574c"/></g>`;
+    // 달
+    back += `<g transform="translate(300 ${yAt(MOON_H) + 30})">
+      <circle r="70" fill="#f1ecdc"/><circle cx="-22" cy="-14" r="13" fill="#ddd5bd"/>
+      <circle cx="24" cy="18" r="9" fill="#ddd5bd"/><circle cx="12" cy="-30" r="6" fill="#ddd5bd"/></g>`;
+    $('decorBack').innerHTML = back;
+    $('decorFront').innerHTML = front;
+
+    // 지구 대륙
+    let land = '';
+    const lr = rng(3);
+    for (let i = 0; i < 14; i++) {
+      const x = -400 + lr() * 1200, y = 300 + lr() * 900, rx = 60 + lr() * 140, ry = 30 + lr() * 70;
+      land += `<ellipse cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" rx="${rx.toFixed(0)}" ry="${ry.toFixed(0)}" fill="${i % 3 ? '#4f9a4a' : '#c7b27a'}" opacity=".9"/>`;
+    }
+    for (let i = 0; i < 16; i++) {
+      const x = -400 + lr() * 1200, y = 280 + lr() * 900;
+      land += `<path d="M${x.toFixed(0)} ${y.toFixed(0)} q60 -20 120 0 q40 10 80 -6" stroke="#fff" stroke-width="${(6 + lr() * 8).toFixed(0)}" fill="none" stroke-linecap="round" opacity=".55"/>`;
+    }
+    $('earthLand').innerHTML = `<g id="earthLandInner">${land}</g>`;
+  })();
+
+  /* ---------- 나무 ---------- */
+  const branches = (() => {
+    const r = rng(42), list = [];
+    let hb = 150, side = r() < .5 ? -1 : 1;
+    while (hb < MOON_H + 400) {
+      list.push({ hb, side, maxL: 50 + r() * 45, ang: 0.45 + r() * 0.35, hue: r() });
+      hb += 34 + r() * 26;
+      side = -side;
+    }
+    return list;
+  })();
+
+  const mix = (a, b, t) => {
+    t = Math.max(0, Math.min(1, t));
+    const pa = a.match(/\w\w/g).map(x => parseInt(x, 16)), pb = b.match(/\w\w/g).map(x => parseInt(x, 16));
+    return '#' + pa.map((v, i) => Math.round(v + (pb[i] - v) * t).toString(16).padStart(2, '0')).join('');
+  };
+  const swayX = (y, h) => BASE_X + Math.sin((BASE_Y - y) * 0.018) * Math.min(8, h * 0.03);
+
+  function drawTree(h, tSec, camY) {
+    if (h < 1) { $tree.innerHTML = ''; $lip.setAttribute('opacity', 0); return; }
+    $lip.setAttribute('opacity', 1);
+    const topY = yAt(h);
+    const viewTop = -camY - 140, viewBot = 300 - camY + 140;
+    const woody = (h - 140) / 260;
+    const trunkCol = mix('6f9a3f', '7a5230', woody);
+    const baseW = Math.min(16, 2.5 + Math.sqrt(h) * 0.55);
+    const wind = Math.sin(tSec * 1.6) * 1.5;
+    const width = y => Math.max(2.4, baseW * (1 - (BASE_Y - y) / h * 0.6)) / 2;
+    let s = '';
+
+    for (const b of branches) {
+      const age = h - b.hb - 24;
+      if (age <= 0) break;
+      const y0 = yAt(b.hb);
+      if (y0 < viewTop || y0 > viewBot) continue;
+      const L = Math.min(b.maxL, age * 0.9);
+      const x0 = swayX(y0, h);
+      const x1 = x0 + b.side * L * Math.cos(b.ang), y1 = y0 - L * Math.sin(b.ang);
+      const bw = Math.max(1.5, Math.min(6, width(y0) * 0.8));
+      s += `<path d="M${x0.toFixed(1)} ${y0.toFixed(1)} Q${((x0 + x1) / 2).toFixed(1)} ${(y0 - L * .15).toFixed(1)} ${x1.toFixed(1)} ${y1.toFixed(1)}" stroke="${trunkCol}" stroke-width="${bw.toFixed(1)}" fill="none" stroke-linecap="round"/>`;
+      const lr = Math.min(26, 6 + L * 0.3);
+      const g1 = mix('7fae4a', '4f8a3a', b.hue), g2 = mix('9cc85a', '6aa24a', b.hue);
+      s += `<g transform="translate(${(x1 + wind).toFixed(1)} ${y1.toFixed(1)})">
+        <circle r="${lr.toFixed(1)}" fill="${g1}"/>
+        <circle cx="${(-lr * .55).toFixed(1)}" cy="${(lr * .3).toFixed(1)}" r="${(lr * .7).toFixed(1)}" fill="${g1}"/>
+        <circle cx="${(lr * .5).toFixed(1)}" cy="${(lr * .25).toFixed(1)}" r="${(lr * .65).toFixed(1)}" fill="${g1}"/>
+        <circle cx="${(-lr * .25).toFixed(1)}" cy="${(-lr * .3).toFixed(1)}" r="${(lr * .55).toFixed(1)}" fill="${g2}"/></g>`;
+    }
+
+    // 줄기: 화면에 보이는 구간만 그림
+    const yFrom = Math.min(BASE_Y, viewBot), yTo = Math.max(topY, viewTop);
+    if (yFrom > yTo) {
+      const left = [], right = [];
+      const steps = Math.max(2, Math.ceil((yFrom - yTo) / 10));
+      for (let i = 0; i <= steps; i++) {
+        const y = yFrom - (yFrom - yTo) * i / steps;
+        const f = (BASE_Y - y) / h;
+        const x = swayX(y, h) + wind * f * f;
+        const w = width(y);
+        left.push(`${(x - w).toFixed(1)} ${y.toFixed(1)}`);
+        right.unshift(`${(x + w).toFixed(1)} ${y.toFixed(1)}`);
+      }
+      s += `<path d="M${left.join(' L')} L${right.join(' L')} Z" fill="${trunkCol}"/>`;
+      if (woody > 0.3) {
+        const startY = Math.floor(yFrom / 46) * 46;
+        for (let y = startY; y > Math.max(yTo, topY + 60); y -= 46) {
+          if (y > BASE_Y - 30) continue;
+          const x = swayX(y, h);
+          s += `<path d="M${(x - 2).toFixed(1)} ${y} q2 -10 0 -18" stroke="#000" stroke-opacity=".15" stroke-width="1.5" fill="none"/>`;
+        }
+      }
+    }
+
+    lapHeights.forEach((lh, i) => {
+      if (lh > h) return;
+      const y = yAt(lh);
+      if (y < viewTop || y > viewBot) return;
+      const x = swayX(y, h) + wind * (lh / h) ** 2, w = width(y);
+      s += `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)})">
+        <rect x="${(-w - 1).toFixed(1)}" y="-3" width="${(w * 2 + 2).toFixed(1)}" height="6" rx="2" fill="#e2574c"/>
+        <path d="M${(w + 1).toFixed(1)} -3 l16 0 l-4 6 l4 6 l-16 0z" fill="#e2574c"/>
+        <text x="${(w + 6).toFixed(1)}" y="7" font-size="8" font-weight="700" fill="#fff" font-family="system-ui">${i + 1}</text></g>`;
+    });
+
+    const tx = swayX(topY, h) + wind;
+    if (h < 30) {
+      const k = h / 30;
+      s += `<g transform="translate(${tx} ${topY}) scale(${(.4 + k * .6).toFixed(2)})">
+        <path d="M0 0 q-16 -2 -20 -14 q14 0 20 14z" fill="#8dbb52"/>
+        <path d="M0 0 q16 -2 20 -14 q-14 0 -20 14z" fill="#8dbb52"/></g>`;
+    } else if (h < 60) {
+      const k = (h - 30) / 30;
+      s += `<g transform="translate(${tx} ${topY})">
+        <path d="M0 6 q-16 -2 -20 -14 q14 0 20 14z" fill="#8dbb52"/>
+        <path d="M0 6 q16 -2 20 -14 q-14 0 -20 14z" fill="#8dbb52"/>
+        <ellipse cx="0" cy="-6" rx="${(5 + k * 3).toFixed(1)}" ry="${(8 + k * 4).toFixed(1)}" fill="#7fae4a"/>
+        <path d="M-4 -14 q4 -${(4 + k * 5).toFixed(1)} 8 0" fill="#f2c230"/></g>`;
+    } else {
+      const R = Math.min(30, 12 + (h - 60) * 0.02);
+      let petals = '';
+      for (let a = 0; a < 360; a += 24) petals += `<ellipse cx="0" cy="${(-R * .62).toFixed(1)}" rx="${(R * .2).toFixed(1)}" ry="${(R * .55).toFixed(1)}" transform="rotate(${(a + tSec * 12).toFixed(1)})"/>`;
+      s += `<g transform="translate(${tx.toFixed(1)} ${(topY - R * .3).toFixed(1)})">
+        <path d="M0 ${R * .4} q-${R} 0 -${R * 1.2} -${R * .6} q${R * .9} -${R * .1} ${R * 1.2} ${R * .6}z" fill="#8dbb52"/>
+        <path d="M0 ${R * .4} q${R} 0 ${R * 1.2} -${R * .6} q-${R * .9} -${R * .1} -${R * 1.2} ${R * .6}z" fill="#8dbb52"/>
+        <g fill="#f5c63a">${petals}</g>
+        <g fill="#f8d55a" transform="scale(.7)">${petals}</g>
+        <circle r="${(R * .32).toFixed(1)}" fill="#e2a21c"/></g>`;
+    }
+    $tree.innerHTML = s;
+  }
+
+  /* ---------- 지구 (우주에서 내려다보기) ---------- */
+  const earthEls = ['earthGlow', 'earthBody', 'earthClipCircle'].map($);
+  function drawEarth(alt) {
+    // alt: 카메라 기준 고도(px). 대기권 근처부터 서서히 나타나고, 멀어질수록 작아짐
+    const o = Math.max(0, Math.min(1, (alt - (ATMO - 500)) / 700));
+    $earth.setAttribute('opacity', o.toFixed(3));
+    if (o <= 0) return;
+    const far = Math.max(0, alt - ATMO);
+    const R = 1400 / (1 + far / 900) + 160;
+    const top = 210 + Math.min(40, far * 0.01);
+    const cy = top + R;
+    earthEls[0].setAttribute('cy', cy); earthEls[0].setAttribute('r', R + 10 + R * 0.012);
+    earthEls[1].setAttribute('cy', cy); earthEls[1].setAttribute('r', R);
+    earthEls[2].setAttribute('cy', cy); earthEls[2].setAttribute('r', R);
+    const k = R / 1200;
+    $('earthLandInner').setAttribute('transform',
+      `translate(200 ${top}) scale(${k.toFixed(3)}) translate(-200 -260) rotate(${(performance.now() / 1000 * 0.6).toFixed(2)} 200 ${1200})`);
+  }
+
+  /* ---------- 속도선 ---------- */
+  const ctx = $fx.getContext('2d');
+  const streaks = Array.from({ length: 46 }, () => ({ x: Math.random(), y: Math.random(), l: .4 + Math.random() * .6 }));
+  function drawFx(v, dt, alt) {
+    const W = $fx.clientWidth, H = $fx.clientHeight, dpr = devicePixelRatio || 1;
+    if ($fx.width !== Math.round(W * dpr)) { $fx.width = Math.round(W * dpr); $fx.height = Math.round(H * dpr); }
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+    const k = Math.max(0, Math.min(1, (v - 120) / 600));
+    if (k <= 0) return;
+    const scale = H / 300;
+    const inCloud = alt > 1450 && alt < 1950;
+    ctx.lineCap = 'round';
+    for (const s of streaks) {
+      s.y += v * dt * scale * (0.9 + s.l) / H * 1.6;
+      if (s.y > 1.2) { s.y -= 1.4; s.x = Math.random(); }
+      const len = (20 + v * 0.12) * s.l * scale;
+      const x = s.x * W, y = s.y * H;
+      const g = ctx.createLinearGradient(x, y - len, x, y);
+      const c = alt > ATMO - 400 ? '255,255,255' : inCloud ? '200,214,230' : '255,255,255';
+      g.addColorStop(0, `rgba(${c},0)`);
+      g.addColorStop(1, `rgba(${c},${(.55 * k * s.l).toFixed(3)})`);
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 1 + s.l * 1.5;
+      ctx.beginPath(); ctx.moveTo(x, y - len); ctx.lineTo(x, y); ctx.stroke();
+    }
+  }
+
+  /* ---------- 연출 이벤트 ---------- */
+  function banner(text) {
+    $banner.textContent = text;
+    $banner.classList.remove('on'); void $banner.offsetWidth; $banner.classList.add('on');
+  }
+  function flash() {
+    $flash.classList.remove('on'); void $flash.offsetWidth; $flash.classList.add('on');
+  }
+  let shakeBurst = 0, ringT = -1;
+
+  const events = [
+    { h: 1,    say: '앗, 입에서 새싹이 났어요!' },
+    { h: 90,   say: '꽃이 피었어요 🌼' },
+    { h: 250,  say: '어…? 멈추질 않아요?!', banner: '쑥쑥!', shake: 2 },
+    { h: 700,  say: '열기구를 지나쳐요 🎈' },
+    { h: 1250, say: '비행기보다 높이! ✈️' },
+    { h: 1480, banner: '구름 속으로!', shake: 4, say: '앞이 하나도 안 보여요!' },
+    { h: 1960, banner: '구름 돌파!', shake: 6, flash: true, say: '구름 바다 위예요 ☁️' },
+    { h: 2600, say: '하늘이 점점 어두워져요…' },
+    { h: ATMO, banner: '대기권 돌파!!', shake: 14, flash: true, ring: true, say: '지구 밖으로 나왔어요!' },
+    { h: ATMO + 500, say: '저기 지구가 보여요 🌍' },
+    { h: 4400, say: '인공위성 안녕! 🛰️' },
+    { h: MOON_H - 30, banner: '달 도착 🌙', shake: 6, flash: true, say: '드디어 달까지 자랐어요!' },
+  ];
+  let eventIdx = 0;
+  function fireEvents(h) {
+    while (eventIdx < events.length && h >= events[eventIdx].h) {
+      const e = events[eventIdx++];
+      if (!running) continue;
+      if (e.say) say(e.say);
+      if (e.banner) banner(e.banner);
+      if (e.flash) flash();
+      if (e.shake) shakeBurst = Math.max(shakeBurst, e.shake);
+      if (e.ring) ringT = 0;
+    }
+  }
+
+  /* ---------- 메인 루프 ---------- */
+  let camY = 0, raf = 0, lastT = performance.now(), lastH = 0;
+  const FOCUS_Y = 50;
+  const targetCam = h => Math.max(0, FOCUS_Y - yAt(h) + 40);
+
+  function frame() {
+    const nowT = performance.now();
+    const dt = Math.min(0.1, (nowT - lastT) / 1000);
+    lastT = nowT;
+
+    const t = now();
+    const h = growth(t);
+    const v = running ? Math.max(0, (h - lastH) / Math.max(dt, 1e-3)) : 0;
+    lastH = h;
+
+    $time.innerHTML = fmt(t, true);
+    $lapNow.textContent = laps.length ? '현재 랩 ' + fmt(t - lastLapTotal) : '';
+    $height.textContent = altLabel(h);
+    $stage.classList.toggle('sprouted', h >= 1);
+    fireEvents(h);
+
+    // 카메라: 자라는 동안엔 꼭대기에 딱 붙어서, 초기화 땐 스르륵 내려옴
+    const goal = targetCam(h);
+    if (running) camY = goal;
+    else { camY += (goal - camY) * Math.min(1, dt * 4); if (Math.abs(goal - camY) < 0.5) camY = goal; }
+
+    const alt = camY + 115;
+    shakeBurst *= Math.pow(0.04, dt);
+    const amp = Math.min(3, v / 300) + shakeBurst;
+    const sx = (Math.random() - .5) * amp, sy = (Math.random() - .5) * amp;
+    const tr = `translate(${sx.toFixed(2)} ${(camY + sy).toFixed(2)})`;
+    cams.forEach(c => c.setAttribute('transform', tr));
+
+    drawTree(h, nowT / 1000, camY);
+    drawEarth(alt);
+    drawFx(v, dt, alt);
+
+    // 구름 속 화이트아웃
+    const c = (alt - 1480) / 480;
+    $whiteout.style.opacity = c > 0 && c < 1 ? (Math.sin(Math.PI * c) * 0.85).toFixed(3) : 0;
+
+    // 대기권 돌파 충격파
+    if (ringT >= 0) {
+      ringT += dt;
+      const p = ringT / 1.2;
+      if (p >= 1) { ringT = -1; $ring.innerHTML = ''; }
+      else {
+        const x = swayX(yAt(h), h), y = yAt(h) - 10;
+        $ring.innerHTML = `<ellipse cx="${x}" cy="${y}" rx="${(20 + p * 260).toFixed(1)}" ry="${(8 + p * 90).toFixed(1)}" fill="none" stroke="#fff" stroke-width="${(6 * (1 - p)).toFixed(2)}" opacity="${(1 - p).toFixed(2)}"/>
+          <ellipse cx="${x}" cy="${y}" rx="${(10 + p * 180).toFixed(1)}" ry="${(4 + p * 60).toFixed(1)}" fill="none" stroke="#ffcf6a" stroke-width="${(4 * (1 - p)).toFixed(2)}" opacity="${(1 - p).toFixed(2)}"/>`;
+      }
+    }
+
+    const settling = camY !== goal || shakeBurst > 0.05 || ringT >= 0;
+    if (running || settling) raf = requestAnimationFrame(frame);
+    else { raf = 0; drawFx(0, 0, alt); }
+  }
+  const kick = () => { if (!raf) { lastT = performance.now(); raf = requestAnimationFrame(frame); } };
+
+  function say(html) { $bubble.innerHTML = html; }
+  function setState(state) {
+    $stage.classList.remove('idle', 'running', 'paused');
+    $stage.classList.add(state);
+  }
+
+  /* ---------- 조작 ---------- */
+  function renderLaps() {
+    let best = -1, worst = -1;
+    if (laps.length >= 2) {
+      best = laps.indexOf(Math.min(...laps));
+      worst = laps.indexOf(Math.max(...laps));
+    }
+    let total = 0;
+    $laps.innerHTML = laps.map((d, i) => {
+      total += d;
+      const cls = i === best ? 'best' : i === worst ? 'worst' : '';
+      return `<li class="${cls}"><span class="n">랩 ${i + 1}</span><span class="lap">${fmt(d)}</span><span class="split">${fmt(total)}</span></li>`;
+    }).reverse().join('');
+  }
+
+  function toggle() {
+    if (running) {
+      elapsed += performance.now() - startAt;
+      running = false;
+      setState('paused');
+      say('잠깐 쉬어요. 나무도 숨 고르는 중…');
+    } else {
+      startAt = performance.now();
+      running = true;
+      setState('running');
+      say(elapsed ? '다시 자라요!' : '영차… 뭔가 올라와요!');
+    }
+    $toggle.textContent = running ? '정지' : (elapsed ? '계속' : '시작');
+    $toggle.classList.toggle('running', running);
+    $lap.textContent = running || !elapsed ? '랩' : '초기화';
+    $lap.disabled = !running && !elapsed;
+    lastH = growth(now());
+    kick();
+  }
+
+  function lap() {
+    if (!running) return;
+    const t = now();
+    laps.push(t - lastLapTotal);
+    lapHeights.push(growth(t));
+    lastLapTotal = t;
+    renderLaps();
+    say(`랩 ${laps.length} — ${altLabel(growth(t)).replace(/^\S+ /, '')} 지점에 리본을 묶었어요 🎀`);
+  }
+
+  function reset() {
+    if (running) return;
+    elapsed = 0; laps = []; lapHeights = []; lastLapTotal = 0; eventIdx = 0; lastH = 0;
+    $toggle.textContent = '시작';
+    $lap.textContent = '랩';
+    $lap.disabled = true;
+    renderLaps();
+    setState('idle');
+    say('안녕, 나는 <b>서거름</b>!<br>시작을 누르면 꽃을 피울게요');
+    kick();
+  }
+
+  $toggle.addEventListener('click', toggle);
+  $lap.addEventListener('click', () => running ? lap() : reset());
+  document.addEventListener('keydown', e => {
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.code === 'Space') { e.preventDefault(); toggle(); }
+    else if (e.code === 'KeyL') lap();
+    else if (e.code === 'KeyR') reset();
+  });
+
+  kick();
+</script>
+</body>
+</html>
