@@ -405,48 +405,80 @@
             <path id="bodyShape" d="M170 52 c10 0 16 -10 13 -22 c12 6 16 20 10 30 c44 10 70 46 70 86 c0 36 -40 52 -93 52 s-93 -16 -93 -52 c0 -50 40 -94 93 -94 z"/>
             <clipPath id="bodyClip"><use href="#bodyShape"/></clipPath>
           </defs>
-          <!-- 셀 셰이딩: 그림자색 위에 밝은 면을 비켜 얹어 경계가 또렷한 음영 -->
-          <use href="#bodyShape" fill="#7a4d2b"/>
+          <!-- 손으로 칠한 셀 애니메이션 캐릭터 느낌: 단순한 형태, 콩알 눈, 빗금 볼터치, 노을 림라이트 -->
+          <use href="#bodyShape" fill="#6f4426"/>
           <g clip-path="url(#bodyClip)">
-            <use href="#bodyShape" fill="#a9703f" transform="translate(-16 -12)"/>
-            <path d="M84 120 C100 70 150 52 200 60 C160 64 118 84 100 128 Z" fill="#c28a55"/>
-            <ellipse cx="126" cy="86" rx="20" ry="8" transform="rotate(-32 126 86)" fill="#e2b07c"/>
-            <ellipse cx="152" cy="68" rx="6" ry="3" transform="rotate(-20 152 68)" fill="#f3d1a0"/>
-            <path d="M190 176 q30 -4 52 -26" stroke="#5f3a1f" stroke-width="3" fill="none" stroke-linecap="round" opacity=".45"/>
+            <use href="#bodyShape" fill="#a56b3c" transform="translate(-14 -12)"/>
+            <path d="M84 124 C98 74 148 54 196 60 C156 66 118 88 102 132 Z" fill="#bc8250"/>
+            <!-- 거름 알갱이: 잎 조각, 잔가지, 흙 점 -->
+            <g opacity=".75">
+              <path d="M112 150 q6 -6 12 -2 q-6 6 -12 2z" fill="#6f8f3a"/>
+              <path d="M232 112 q5 -7 11 -4 q-5 7 -11 4z" fill="#7a9a40"/>
+              <path d="M205 170 l14 -5" stroke="#5a3a1c" stroke-width="1.6" stroke-linecap="round"/>
+              <path d="M118 104 l9 4" stroke="#7a5230" stroke-width="1.4" stroke-linecap="round"/>
+              <circle cx="140" cy="168" r="1.6" fill="#e3b887"/><circle cx="250" cy="146" r="1.4" fill="#e3b887"/>
+              <circle cx="104" cy="132" r="1.3" fill="#e3b887"/><circle cx="176" cy="80" r="1.2" fill="#e3b887"/>
+              <circle cx="226" cy="186" r="1.5" fill="#4e2f18"/><circle cx="160" cy="184" r="1.3" fill="#4e2f18"/>
+            </g>
+            <!-- 노을빛 림라이트 (왼쪽 위에서 비추는 해) -->
+            <path d="M80 150 C76 104 112 66 160 56" stroke="#ffb877" stroke-width="5" fill="none" stroke-linecap="round" opacity=".85"/>
+            <path d="M166 50 c8 -4 13 -10 14 -18" stroke="#ffcf98" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/>
+            <ellipse cx="124" cy="88" rx="16" ry="6" transform="rotate(-34 124 88)" fill="#e9b884"/>
+            <!-- 바닥 쪽 짙은 그늘 -->
+            <path d="M92 168 C120 196 220 198 258 160 L270 210 L80 210Z" fill="#4f2f18" opacity=".45"/>
           </g>
-          <use href="#bodyShape" fill="none" stroke="#3f2614" stroke-width="2.6" stroke-linejoin="round"/>
+          <use href="#bodyShape" fill="none" stroke="#3a2414" stroke-width="2.4" stroke-linejoin="round"/>
+          <path d="M98 176 C130 200 214 200 246 172" stroke="#2a180c" stroke-width="3.4" fill="none" stroke-linecap="round" opacity=".55"/>
+
+          <!-- 머리 꼭지의 새싹 -->
+          <g transform="translate(184 30)">
+            <path d="M0 2 q-1 -7 1 -12" stroke="#4f7a2c" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+            <path d="M1 -9 C-4 -20 -16 -18 -18 -12 C-12 -8 -4 -7 1 -9Z" fill="#7fae46" stroke="#36581f" stroke-width="1.2"/>
+            <path d="M1 -10 C6 -21 18 -21 20 -15 C14 -10 6 -9 1 -10Z" fill="#94c255" stroke="#36581f" stroke-width="1.2"/>
+            <path d="M-15 -12 q7 1 14 -2" stroke="#36581f" stroke-width=".8" fill="none"/>
+            <path d="M17 -15 q-7 2 -14 4" stroke="#36581f" stroke-width=".8" fill="none"/>
+          </g>
+
           <g class="arm arm-l">
-            <ellipse cx="102" cy="170" rx="22" ry="16" fill="#7a4d2b" stroke="#3f2614" stroke-width="2.4"/>
-            <ellipse cx="98" cy="166" rx="17" ry="11" fill="#a9703f"/>
-            <ellipse cx="92" cy="162" rx="6" ry="3" fill="#e2b07c"/>
+            <ellipse cx="102" cy="170" rx="21" ry="15" fill="#6f4426" stroke="#3a2414" stroke-width="2.2"/>
+            <ellipse cx="98" cy="166" rx="16" ry="10" fill="#a56b3c"/>
+            <path d="M84 166 q4 -8 14 -10" stroke="#ffb877" stroke-width="2.4" fill="none" stroke-linecap="round" opacity=".8"/>
           </g>
           <g class="arm arm-r">
-            <ellipse cx="238" cy="170" rx="22" ry="16" fill="#7a4d2b" stroke="#3f2614" stroke-width="2.4"/>
-            <ellipse cx="234" cy="166" rx="17" ry="11" fill="#a9703f"/>
-            <ellipse cx="228" cy="162" rx="6" ry="3" fill="#e2b07c"/>
+            <ellipse cx="238" cy="170" rx="21" ry="15" fill="#6f4426" stroke="#3a2414" stroke-width="2.2"/>
+            <ellipse cx="234" cy="166" rx="16" ry="10" fill="#a56b3c"/>
           </g>
-          <ellipse cx="124" cy="140" rx="15" ry="9" fill="#e9826d" opacity=".45"/>
-          <ellipse cx="218" cy="140" rx="15" ry="9" fill="#e9826d" opacity=".45"/>
+
+          <!-- 빗금 볼터치 -->
+          <g>
+            <ellipse cx="126" cy="140" rx="14" ry="7" fill="#e9826d" opacity=".35"/>
+            <ellipse cx="216" cy="140" rx="14" ry="7" fill="#e9826d" opacity=".35"/>
+            <path d="M118 143 l5 -7 M124 144 l5 -7 M130 144 l5 -7 M208 144 l5 -7 M214 144 l5 -7 M220 143 l5 -7" stroke="#c9503c" stroke-width="1.5" stroke-linecap="round" opacity=".75"/>
+          </g>
+
           <g class="eyes">
             <g class="e-open"><g class="blink">
-              <ellipse cx="146" cy="122" rx="7" ry="9" fill="#24170c"/>
-              <ellipse cx="196" cy="122" rx="7" ry="9" fill="#24170c"/>
-              <circle cx="148" cy="119" r="2.4" fill="#fff"/>
-              <circle cx="198" cy="119" r="2.4" fill="#fff"/>
-            </g></g>
+              <ellipse cx="148" cy="122" rx="5.2" ry="7.6" fill="#1f130a"/>
+              <ellipse cx="194" cy="122" rx="5.2" ry="7.6" fill="#1f130a"/>
+              <circle cx="149.6" cy="118.4" r="1.9" fill="#fff"/>
+              <circle cx="195.6" cy="118.4" r="1.9" fill="#fff"/>
+            </g>
+              <path d="M138 106 q8 -4 16 -1 M188 105 q8 -3 16 1" stroke="#3a2414" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>
+            </g>
             <g class="e-happy">
-              <path d="M136 124 q10 -12 20 0" stroke="#24170c" stroke-width="4.5" fill="none" stroke-linecap="round"/>
-              <path d="M186 124 q10 -12 20 0" stroke="#24170c" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+              <path d="M140 124 q8 -10 16 0" stroke="#1f130a" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M186 124 q8 -10 16 0" stroke="#1f130a" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <path d="M138 104 q8 -5 16 -2 M188 102 q8 -3 16 2" stroke="#3a2414" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7"/>
             </g>
             <g class="e-wink">
-              <ellipse cx="146" cy="122" rx="7" ry="9" fill="#24170c"/>
-              <circle cx="148" cy="119" r="2.4" fill="#fff"/>
-              <path d="M188 122 l16 0" stroke="#24170c" stroke-width="4.5" stroke-linecap="round"/>
+              <ellipse cx="148" cy="122" rx="5.2" ry="7.6" fill="#1f130a"/>
+              <circle cx="149.6" cy="118.4" r="1.9" fill="#fff"/>
+              <path d="M187 121 q7 4 14 0" stroke="#1f130a" stroke-width="3" fill="none" stroke-linecap="round"/>
             </g>
           </g>
           <g class="mouth">
-            <path class="m-smile" d="M163 144 q8 6 16 0" stroke="#24170c" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-            <ellipse class="m-o" cx="171" cy="146" rx="9" ry="7" fill="#4a2414"/>
+            <path class="m-smile" d="M164 142 q4 4 7 0 q3 4 7 0" stroke="#2a180c" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            <g class="m-o"><ellipse cx="171" cy="146" rx="8" ry="6.5" fill="#4a2414" stroke="#2a180c" stroke-width="1.6"/><ellipse cx="171" cy="149" rx="4" ry="2" fill="#c8604a"/></g>
           </g>
           <path class="sweat" d="M248 92 q8 12 0 16 q-8 -4 0 -16z" fill="#8cc6e8"/>
         </g>
@@ -470,6 +502,7 @@
         <ellipse cx="15" cy="20" rx="2" ry="2.6" fill="#24170c"/><ellipse cx="25" cy="20" rx="2" ry="2.6" fill="#24170c"/>
         <ellipse cx="11" cy="25" rx="3" ry="1.8" fill="#e9826d" opacity=".6"/><ellipse cx="29" cy="25" rx="3" ry="1.8" fill="#e9826d" opacity=".6"/>
         <ellipse cx="20" cy="26" rx="2.2" ry="1.8" fill="#4a2414"/>
+        <path d="M22.5 2 q-3 -3 -6 -1 q3 2 6 1z M22.5 2 q3 -3 6 -1 q-3 2 -6 1z" fill="#7fae46"/>
       </svg>
       <span id="bubbleText">안녕, 나는 <b>서거름</b>!<br>시작하면 꽃을 피울게요</span>
     </div>
